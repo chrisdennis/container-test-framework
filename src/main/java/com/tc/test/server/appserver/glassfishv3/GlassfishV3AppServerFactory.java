@@ -1,5 +1,6 @@
 /*
- * All content copyright (c) 2003-2008 Terracotta, Inc., except as may otherwise be noted in a separate copyright notice.  All rights reserved.
+ * All content copyright (c) 2003-2008 Terracotta, Inc., except as may otherwise be noted in a separate copyright
+ * notice. All rights reserved.
  */
 package com.tc.test.server.appserver.glassfishv3;
 
@@ -16,17 +17,14 @@ import java.util.Properties;
 
 public class GlassfishV3AppServerFactory extends AppServerFactory {
 
-  public GlassfishV3AppServerFactory(final ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
   @Override
   public AppServerParameters createParameters(final String instanceName, final Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
   @Override
-  public AppServerInstallation createInstallation(final File home, final File workingDir, final AppServerInfo appServerInfo) throws Exception {
+  public AppServerInstallation createInstallation(final File home, final File workingDir,
+                                                  final AppServerInfo appServerInfo) throws Exception {
     GlassfishAppServerInstallation install = new GlassfishAppServerInstallation(home, workingDir, appServerInfo);
     return install;
   }

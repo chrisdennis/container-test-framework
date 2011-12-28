@@ -20,19 +20,17 @@ import java.util.Properties;
  */
 public final class Resin31xAppServerFactory extends AppServerFactory {
 
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public Resin31xAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new Resin31xAppServer((Resin31xAppServerInstallation) installation);
   }
 
+  @Override
   public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
       throws Exception {
     return new Resin31xAppServerInstallation(home, workingDir, appServerInfo);

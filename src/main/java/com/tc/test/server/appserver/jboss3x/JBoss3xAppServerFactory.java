@@ -20,19 +20,17 @@ import java.util.Properties;
  */
 public final class JBoss3xAppServerFactory extends AppServerFactory {
 
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public JBoss3xAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new JBoss3xAppServer((JBoss3xAppServerInstallation) installation);
   }
 
+  @Override
   public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
       throws Exception {
     return new JBoss3xAppServerInstallation(home, workingDir, appServerInfo);

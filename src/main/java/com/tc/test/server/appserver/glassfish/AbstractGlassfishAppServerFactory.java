@@ -8,12 +8,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
+import org.apache.xalan.xsltc.trax.TransformerFactoryImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.apache.xalan.xsltc.trax.TransformerFactoryImpl;
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.appserver.AppServer;
 import com.tc.test.server.appserver.AppServerFactory;
@@ -34,11 +34,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 public abstract class AbstractGlassfishAppServerFactory extends AppServerFactory {
-
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public AbstractGlassfishAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
 
   @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {

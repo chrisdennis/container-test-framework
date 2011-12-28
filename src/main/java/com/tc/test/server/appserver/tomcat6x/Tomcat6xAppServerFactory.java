@@ -20,19 +20,17 @@ import java.util.Properties;
  */
 public final class Tomcat6xAppServerFactory extends AppServerFactory {
 
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public Tomcat6xAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new Tomcat6xAppServer((Tomcat6xAppServerInstallation) installation);
   }
 
+  @Override
   public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
       throws Exception {
     return new Tomcat6xAppServerInstallation(home, workingDir, appServerInfo);

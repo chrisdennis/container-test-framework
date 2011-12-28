@@ -24,7 +24,6 @@ import com.tc.test.server.appserver.tomcat7x.Tomcat7xAppServerFactory;
 import com.tc.test.server.appserver.was7x.Was7xAppServerFactory;
 import com.tc.test.server.appserver.wasce1x.Wasce1xAppServerFactory;
 import com.tc.test.server.appserver.weblogic10x.Weblogic10xAppServerFactory;
-import com.tc.util.Assert;
 
 import java.io.File;
 import java.util.Properties;
@@ -35,10 +34,6 @@ import java.util.Properties;
  * creating a working appserver. Never instantiate specific appserver classes explicitly.
  */
 public abstract class AppServerFactory {
-
-  protected AppServerFactory(final ProtectedKey protectedKey) {
-    Assert.assertNotNull(protectedKey);
-  }
 
   public abstract AppServerParameters createParameters(String instanceName, Properties props);
 
@@ -60,50 +55,44 @@ public abstract class AppServerFactory {
 
     switch (appServerInfo.getId()) {
       case AppServerInfo.TOMCAT:
-        if ("5".equals(majorVersion)) return new Tomcat5xAppServerFactory(new ProtectedKey());
-        if ("6".equals(majorVersion)) return new Tomcat6xAppServerFactory(new ProtectedKey());
-        if ("7".equals(majorVersion)) return new Tomcat7xAppServerFactory(new ProtectedKey());
+        if ("5".equals(majorVersion)) return new Tomcat5xAppServerFactory();
+        if ("6".equals(majorVersion)) return new Tomcat6xAppServerFactory();
+        if ("7".equals(majorVersion)) return new Tomcat7xAppServerFactory();
         break;
       case AppServerInfo.WEBLOGIC:
-        if ("10".equals(majorVersion)) return new Weblogic10xAppServerFactory(new ProtectedKey());
+        if ("10".equals(majorVersion)) return new Weblogic10xAppServerFactory();
         break;
       case AppServerInfo.WASCE:
-        if ("1".equals(majorVersion)) return new Wasce1xAppServerFactory(new ProtectedKey());
+        if ("1".equals(majorVersion)) return new Wasce1xAppServerFactory();
         break;
       case AppServerInfo.JBOSS:
-        if ("3".equals(majorVersion)) return new JBoss3xAppServerFactory(new ProtectedKey());
+        if ("3".equals(majorVersion)) return new JBoss3xAppServerFactory();
         if ("4".equals(majorVersion)) {
           if (minorVersion.startsWith("0")) {
-            return new JBoss4xAppServerFactory(new ProtectedKey());
-          } else if (minorVersion.startsWith("2")) { return new JBoss42xAppServerFactory(new ProtectedKey()); }
+            return new JBoss4xAppServerFactory();
+          } else if (minorVersion.startsWith("2")) { return new JBoss42xAppServerFactory(); }
         }
-        if ("5".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss51xAppServerFactory(
-                                                                                                            new ProtectedKey()); }
-        if ("6".equals(majorVersion) && minorVersion.startsWith("0")) { return new JBoss6xAppServerFactory(
-                                                                                                           new ProtectedKey()); }
+        if ("5".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss51xAppServerFactory(); }
+        if ("6".equals(majorVersion) && minorVersion.startsWith("0")) { return new JBoss6xAppServerFactory(); }
         break;
       case AppServerInfo.GLASSFISH:
-        if ("v1".equals(majorVersion)) return new GlassfishV1AppServerFactory(new ProtectedKey());
-        if ("v2".equals(majorVersion)) return new GlassfishV2AppServerFactory(new ProtectedKey());
-        if ("v3".equals(majorVersion)) return new GlassfishV3AppServerFactory(new ProtectedKey());
+        if ("v1".equals(majorVersion)) return new GlassfishV1AppServerFactory();
+        if ("v2".equals(majorVersion)) return new GlassfishV2AppServerFactory();
+        if ("v3".equals(majorVersion)) return new GlassfishV3AppServerFactory();
         break;
       case AppServerInfo.JETTY:
-        if ("6".equals(majorVersion)) return new Jetty6xAppServerFactory(new ProtectedKey());
-        if ("7".equals(majorVersion)) return new Jetty7xAppServerFactory(new ProtectedKey());
+        if ("6".equals(majorVersion)) return new Jetty6xAppServerFactory();
+        if ("7".equals(majorVersion)) return new Jetty7xAppServerFactory();
         break;
       case AppServerInfo.RESIN:
-        if ("3".equals(majorVersion)) return new Resin31xAppServerFactory(new ProtectedKey());
+        if ("3".equals(majorVersion)) return new Resin31xAppServerFactory();
         break;
       case AppServerInfo.WEBSPHERE:
-        if ("7".equals(majorVersion)) return new Was7xAppServerFactory(new ProtectedKey());
+        if ("7".equals(majorVersion)) return new Was7xAppServerFactory();
         break;
     }
 
     throw new ImplementMe("App server named '" + factoryName + "' with major version " + majorVersion
                           + " is not yet supported.");
-  }
-
-  protected static class ProtectedKey {
-    // ensure that only this class may invoke it's children
   }
 }

@@ -15,10 +15,7 @@ import com.tc.test.server.appserver.glassfish.GlassfishAppServerInstallation;
  */
 public final class GlassfishV1AppServerFactory extends AbstractGlassfishAppServerFactory {
 
-  public GlassfishV1AppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new GlassfishV1AppServer((GlassfishAppServerInstallation) installation);
   }

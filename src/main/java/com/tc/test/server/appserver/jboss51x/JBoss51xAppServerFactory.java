@@ -20,19 +20,17 @@ import java.util.Properties;
  */
 public final class JBoss51xAppServerFactory extends AppServerFactory {
 
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public JBoss51xAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new JBoss51xAppServer((JBoss51xAppServerInstallation) installation);
   }
 
+  @Override
   public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
       throws Exception {
     return new JBoss51xAppServerInstallation(home, workingDir, appServerInfo);

@@ -20,20 +20,19 @@ import java.util.Properties;
  */
 public final class Wasce1xAppServerFactory extends AppServerFactory {
 
-  // This class may only be instantiated by its parent which contains the ProtectedKey
-  public Wasce1xAppServerFactory(ProtectedKey protectedKey) {
-    super(protectedKey);
-  }
-
+  @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
     return new StandardAppServerParameters(instanceName, props);
   }
 
+  @Override
   public AppServer createAppServer(AppServerInstallation installation) {
     return new Wasce1xAppServer((Wasce1xAppServerInstallation) installation);
   }
 
-  public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo) throws Exception {
+  @Override
+  public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
+      throws Exception {
     return new Wasce1xAppServerInstallation(home, workingDir, appServerInfo);
   }
 }
