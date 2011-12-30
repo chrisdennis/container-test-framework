@@ -239,7 +239,10 @@ public class ServerManager {
 
   public DeploymentBuilder makeDeploymentBuilder(final String warFileName, boolean clustered) {
     DeploymentBuilder builder = new WARBuilder(warFileName, warDir, config, clustered);
-    addExpressModeWarConfig(builder);
+
+    if (clustered) {
+      addExpressModeWarConfig(builder);
+    }
     return builder;
   }
 
