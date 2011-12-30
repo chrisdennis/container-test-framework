@@ -63,11 +63,13 @@ public class ServerManager {
   private static int                  serverCounter              = 0;
   private final Boolean               isSynchronousWrite;
   private final Boolean               isSessionLocking;
+  private final boolean               isSessionTest;
 
   public ServerManager(final Class testClass, final Collection extraJvmArgs, Boolean isSessionLocking,
                        Boolean isSynchronousWrite) throws Exception {
     this.isSessionLocking = isSessionLocking;
     this.isSynchronousWrite = isSynchronousWrite;
+    this.isSessionTest = isTerracottaSessionJarPresent();
 
     config = TestConfigObject.getInstance();
     factory = AppServerFactory.createFactoryFromProperties();
@@ -89,6 +91,15 @@ public class ServerManager {
       serverTcConfig.setDsoPort(pc.chooseRandomPort());
       serverTcConfig.setJmxPort(pc.chooseRandomPort());
       serverTcConfig.setGroupPort(pc.chooseRandomPort());
+    }
+  }
+
+  private boolean isTerracottaSessionJarPresent() {
+    try {
+      Class.forName(EXPRESS_MODE_LOAD_CLASS);
+      return true;
+    } catch (Exception e) {
+      return false;
     }
   }
 
@@ -302,11 +313,14 @@ public class ServerManager {
   }
 
   private void addExpressModeParams(StandardAppServerParameters params) {
-    setupExpressJarContaining(params, EXPRESS_MODE_LOAD_CLASS);
     setupExpressJarContaining(params, EXPRESS_RUNTIME_LOAD_CLASS);
 
-    if (config.appServerId() == AppServerInfo.TOMCAT) {
-      params.addValve(makeValveDef());
+    if (isSessionTest) {
+      setupExpressJarContaining(params, EXPRESS_MODE_LOAD_CLASS);
+
+      if (config.appServerId() == AppServerInfo.TOMCAT) {
+        params.addValve(makeValveDef());
+      }
     }
   }
 
@@ -332,26 +346,28 @@ public class ServerManager {
   }
 
   private void addExpressModeWarConfig(DeploymentBuilder builder) {
-    if (useFilter()) {
-      try {
-        builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_MODE_LOAD_CLASS));
-        builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_RUNTIME_LOAD_CLASS));
-      } catch (ClassNotFoundException e1) {
-        throw new RuntimeException(e1);
+    if (isSessionTest) {
+      if (useFilter()) {
+        try {
+          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_MODE_LOAD_CLASS));
+          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_RUNTIME_LOAD_CLASS));
+        } catch (ClassNotFoundException e1) {
+          throw new RuntimeException(e1);
+        }
+
+        Map<String, String> filterConfig = getConfigAttributes();
+
+        Class filter;
+        try {
+          filter = Class.forName(Mappings.getClassForAppServer(config.appServerInfo()));
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+        builder.addFilter("terracotta-filter", "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
       }
 
-      Map<String, String> filterConfig = getConfigAttributes();
-
-      Class filter;
-      try {
-        filter = Class.forName(Mappings.getClassForAppServer(config.appServerInfo()));
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-      builder.addFilter("terracotta-filter", "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
+      builder.addFileAsResource(makeJbossContextXml(config.appServerInfo()), "WEB-INF");
     }
-
-    builder.addFileAsResource(makeJbossContextXml(config.appServerInfo()), "WEB-INF");
   }
 
   private File makeJbossContextXml(AppServerInfo appServerInfo) {
