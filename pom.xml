@@ -30,7 +30,6 @@
       <artifactId>test-framework</artifactId>
       <version>${terracotta.core.version}</version>
       <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.terracotta.api</groupId>
