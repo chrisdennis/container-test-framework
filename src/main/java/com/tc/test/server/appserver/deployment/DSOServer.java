@@ -4,8 +4,8 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import com.tc.config.schema.test.L2ConfigBuilder;
-import com.tc.config.schema.test.TerracottaConfigBuilder;
+import com.tc.config.test.schema.L2ConfigBuilder;
+import com.tc.config.test.schema.TerracottaConfigBuilder;
 import com.tc.objectserver.control.ExtraProcessServerControl;
 import com.tc.util.TcConfigBuilder;
 
