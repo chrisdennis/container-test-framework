@@ -29,7 +29,6 @@
       <groupId>org.terracotta.test</groupId>
       <artifactId>test-framework</artifactId>
       <version>${terracotta.core.version}</version>
-      <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.terracotta.api</groupId>
