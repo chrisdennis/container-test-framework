@@ -8,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -258,7 +257,6 @@ public class WebsphereAppServer extends AbstractAppServer {
     for (Iterator it = set.iterator(); it.hasNext();) {
       lines.add(getPolicyFor((File) it.next()));
     }
-    lines.add(getPolicyFor(new File(TestConfigObject.getInstance().normalBootJar())));
 
     writeLines(lines, new File(new File(instanceDir, "properties"), "server.policy"), true);
   }

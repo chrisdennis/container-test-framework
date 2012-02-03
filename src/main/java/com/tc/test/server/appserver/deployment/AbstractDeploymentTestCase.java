@@ -46,10 +46,6 @@ public abstract class AbstractDeploymentTestCase extends TCTestCase {
   }
 
   public boolean shouldDisable() {
-    if (!TestConfigObject.getInstance().transparentTestsMode().equals(TestConfigObject.TRANSPARENT_TESTS_MODE_NORMAL)) {
-      Banner.warnBanner("NOT RUNNNING TEST BECAUSE TEST MODE IS NOT 'normal'");
-      return true;
-    }
 
     return shouldBeSkipped() || isAllDisabled() || shouldDisableForJavaVersion() || shouldDisableForVariants();
   }

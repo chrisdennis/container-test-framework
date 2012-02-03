@@ -6,7 +6,6 @@ package com.tc.test.server.appserver.deployment;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.TestConfigObject;
-import com.tc.text.Banner;
 import com.tc.util.TcConfigBuilder;
 
 import java.util.ArrayList;
@@ -84,11 +83,6 @@ public class ServerTestSetup extends TestSetup {
   }
 
   public boolean shouldDisable() {
-    if (!TestConfigObject.getInstance().transparentTestsMode().equals(TestConfigObject.TRANSPARENT_TESTS_MODE_NORMAL)) {
-      Banner.warnBanner("NOT RUNNNING TEST BECAUSE TEST MODE IS NOT 'normal'");
-      return true;
-    }
-
     for (Enumeration e = ((TestSuite) fTest).tests(); e.hasMoreElements();) {
       Object o = e.nextElement();
       if (o instanceof AbstractDeploymentTestCase && ((AbstractDeploymentTestCase) o).shouldDisable()) { return true; }
