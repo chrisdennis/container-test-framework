@@ -31,18 +31,6 @@
       <version>${terracotta.core.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.terracotta.api</groupId>
-      <artifactId>test-api</artifactId>
-      <version>${terracotta.core.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>httpunit</groupId>
-          <artifactId>httpunit</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.terracotta</groupId>
       <artifactId>tc-cargo-core-uberjar</artifactId>
       <version>0.9.20110712</version>
@@ -50,7 +38,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.2</version>
+      <version>4.10</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -80,6 +68,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>rhino</groupId>
+      <artifactId>js</artifactId>
+      <version>1.7R2</version>
+    </dependency>    
   </dependencies>
 
   <build>
