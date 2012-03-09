@@ -7,6 +7,7 @@ package com.tc.test.server.appserver.deployment;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.meterware.httpunit.HttpUnitOptions;
 import com.tc.test.AppServerInfo;
 import com.tc.test.TCTestCase;
 import com.tc.test.TestConfigObject;
@@ -72,6 +73,9 @@ public abstract class AbstractDeploymentTestCase extends TCTestCase {
 
   @Override
   public void runBare() throws Throwable {
+    // disable javascript by default
+    HttpUnitOptions.setScriptingEnabled(false);
+
     if (this.shouldBeSkipped()) {
       Banner.warnBanner("Test " + this.getClass().getName()
                         + " is skipped because it's not configured to run with an appserver");
