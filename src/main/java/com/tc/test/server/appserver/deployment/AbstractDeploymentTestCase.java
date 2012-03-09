@@ -38,7 +38,8 @@ public abstract class AbstractDeploymentTestCase extends TCTestCase {
   }
 
   public AbstractDeploymentTestCase() {
-    //
+    // disable javascript by default
+    HttpUnitOptions.setScriptingEnabled(false);
   }
 
   @Override
@@ -73,9 +74,6 @@ public abstract class AbstractDeploymentTestCase extends TCTestCase {
 
   @Override
   public void runBare() throws Throwable {
-    // disable javascript by default
-    HttpUnitOptions.setScriptingEnabled(false);
-
     if (this.shouldBeSkipped()) {
       Banner.warnBanner("Test " + this.getClass().getName()
                         + " is skipped because it's not configured to run with an appserver");
