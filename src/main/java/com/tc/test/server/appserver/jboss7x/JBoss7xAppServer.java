@@ -38,6 +38,9 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
   private static final long               START_STOP_TIMEOUT = 240 * 1000;                     // 4 minutes
 
+  private static final String             JAVA_CMD           = System.getProperty("java.home") + File.separator + "bin"
+                                                               + File.separator + "java";
+
   private final File                      serverInstallDir;
   private String                          instanceName;
   private File                            instanceDir;
@@ -68,11 +71,31 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     // copyServerLibs();
     // writeJbossWebXml();
 
-    // create start command with standalone.sh
     System.err.println("Starting jboss7 " + instanceName + " on port " + start_port + "...");
-    File startScript = new File(new File(serverInstallDir, "bin"), getPlatformScript("standalone"));
-    final String startCmd[] = new String[] { startScript.getAbsolutePath(), "-Djboss.server.base.dir=" + instanceDir };
-    System.err.println("Cmd: " + Arrays.asList(startCmd));
+
+    // // create start command with standalone.sh
+    // File startScript = new File(new File(serverInstallDir, "bin"), getPlatformScript("standalone"));
+    // // trying to get boot log to go in the sandbox rather than the server home see
+    // // https://issues.jboss.org/browse/AS7-4271
+    // // might only work on linux see https://issues.jboss.org/browse/AS7-1947
+    // File logDir = new File(instanceDir, "log");
+    // final String startCmd[] = new String[] { startScript.getAbsolutePath(),
+    // "-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath(),
+    // "-Djboss.server.log.dir=" + logDir.getAbsolutePath(),
+    // "-Djboss.server.base.dir=" + instanceDir.getAbsolutePath() };
+
+    // Try a different startup using the java command directly, to work around the boot.log init problem mentioned above
+    File logDir = new File(instanceDir, "log");
+    final File nodeLog = new File(logDir, "foo.txt");
+    final String[] startCmd = new String[] { JAVA_CMD,
+        "-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath(),
+        "-Dlogging.configuration=file:" + new File(instanceDir, "configuration/logging.properties").getAbsolutePath(),
+        "-jar", new File(serverInstallDir, "jboss-modules.jar").getAbsolutePath(), "-mp",
+        new File(serverInstallDir, "modules").getAbsolutePath(), "-jaxpmodule", "javax.xml.jaxp-provider",
+        "org.jboss.as.standalone", "-Djboss.home.dir=" + serverInstallDir.getAbsolutePath(),
+        "-Djboss.server.base.dir=" + instanceDir.getAbsolutePath() };
+
+    System.err.println("Start cmd: " + Arrays.asList(startCmd));
 
     runner = new Thread("runner for " + instanceName) {
       @Override
@@ -90,6 +113,9 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     };
     runner.start();
     AppServerUtil.waitForPort(start_port, START_STOP_TIMEOUT);
+    // need some time to start and deploy? TODO: better way to check this than to just blindly sleep
+    // AppServerUtil.waitForPort(admin_port, START_STOP_TIMEOUT);
+    Thread.sleep(5000);
     System.err.println("Started " + instanceName + " on port " + start_port);
     return new AppServerResult(start_port, this);
   }
@@ -102,6 +128,7 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     final String cmd[] = new String[] { stopScript.getAbsolutePath(), "--connect",
         "--controller=localhost:" + admin_port, ":shutdown" };
 
+    System.err.println("Stop cmd: " + Arrays.asList(cmd));
     Result result = Exec.execute(cmd, null, null, stopScript.getParentFile());
     if (result.getExitCode() != 0) {
       System.err.println(result);
@@ -119,7 +146,7 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
   /*
    * (over)write ports to $instanceDir/configuration/standalone.xml Uses hard-coded line numbers to find the lines to
-   * replace All the ports we care about: management_native_port = 9999 management_http_port=9990
+   * replace. All the ports we care about: management_native_port = 9999 management_http_port=9990
    * management_https_port=9443 ajp_port = 8009 http_port = 8080 https_port = 8443 osgi-http_port = 8090 remoting_port =
    * 4447 txn-recovery-environment_port 4712 txn-status-manager_port = 4713 mail-smtp_port = 25 <-- not changing this
    * one
