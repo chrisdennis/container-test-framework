@@ -86,7 +86,6 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
     // Try a different startup using the java command directly, to work around the boot.log init problem mentioned above
     File logDir = new File(instanceDir, "log");
-    final File nodeLog = new File(logDir, "foo.txt");
     final String[] startCmd = new String[] { JAVA_CMD,
         "-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath(),
         "-Dlogging.configuration=file:" + new File(instanceDir, "configuration/logging.properties").getAbsolutePath(),
