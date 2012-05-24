@@ -67,10 +67,6 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     deployWars(params.deployables());
     copyServerLib(params.tomcatServerJars());
 
-    // This is taken care of by extra logic in com.tc.test.server.appserver.deployment.ServerManager
-    // copyServerLibs();
-    // writeJbossWebXml();
-
     System.err.println("Starting jboss7 " + instanceName + " on port " + start_port + "...");
 
     // // create start command with standalone.sh
@@ -96,12 +92,12 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
     System.err.println("Start cmd: " + Arrays.asList(startCmd));
 
+    final String nodeLogFile = new File(instanceDir + ".log").getAbsolutePath();
     runner = new Thread("runner for " + instanceName) {
       @Override
       public void run() {
         try {
-          // do we need logging?
-          Result result = Exec.execute(startCmd, null, null, serverInstallDir);
+          Result result = Exec.execute(startCmd, nodeLogFile, null, serverInstallDir);
           if (result.getExitCode() != 0) {
             System.err.println(result);
           }
@@ -113,7 +109,6 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     runner.start();
     AppServerUtil.waitForPort(start_port, START_STOP_TIMEOUT);
     // need some time to start and deploy? TODO: better way to check this than to just blindly sleep
-    // AppServerUtil.waitForPort(admin_port, START_STOP_TIMEOUT);
     Thread.sleep(5000);
     System.err.println("Started " + instanceName + " on port " + start_port);
     return new AppServerResult(start_port, this);
