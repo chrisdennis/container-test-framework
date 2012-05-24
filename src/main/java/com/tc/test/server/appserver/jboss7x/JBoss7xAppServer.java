@@ -102,7 +102,7 @@ public final class JBoss7xAppServer extends AbstractAppServer {
       @Override
       public void run() {
         try {
-          Result result = Exec.execute(startCmd, nodeLogFile, null, serverInstallDir);
+          Result result = Exec.execute(startCmd, nodeLogFile, null, instanceDir);
           if (result.getExitCode() != 0) {
             System.err.println(result);
           }
