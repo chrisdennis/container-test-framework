@@ -6,13 +6,17 @@ package com.tc.test.server.appserver.jboss7x;
 
 import org.apache.commons.io.FileUtils;
 
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebResponse;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
-import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
+import com.tc.test.server.appserver.StandardAppServerParameters;
+import com.tc.test.server.appserver.deployment.Deployment;
+import com.tc.test.server.appserver.deployment.WARBuilder;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.text.Banner;
 import com.tc.util.PortChooser;
@@ -36,18 +40,19 @@ import java.util.Set;
  */
 public final class JBoss7xAppServer extends AbstractAppServer {
 
-  private static final long               START_STOP_TIMEOUT = 240 * 1000;                     // 4 minutes
+  private static final long               START_STOP_TIMEOUT      = 240 * 1000;                       // 4 minutes
+  private static final String             STARTUP_MONITOR_CONTEXT = "STARTWATCH";
 
-  private static final String             JAVA_CMD           = System.getProperty("java.home") + File.separator + "bin"
-                                                               + File.separator + "java";
+  private static final String             JAVA_CMD                = System.getProperty("java.home") + File.separator
+                                                                    + "bin" + File.separator + "java";
 
   private final File                      serverInstallDir;
   private String                          instanceName;
   private File                            instanceDir;
-  private Thread                          runner             = null;
-  private final HashMap<String, PortLine> portMap            = new HashMap<String, PortLine>();
-  private int                             start_port         = 0;
-  private int                             admin_port         = 0;
+  private Thread                          runner                  = null;
+  private final HashMap<String, PortLine> portMap                 = new HashMap<String, PortLine>();
+  private int                             start_port              = 0;
+  private int                             admin_port              = 0;
 
   public JBoss7xAppServer(JBoss7xAppServerInstallation installation) {
     super(installation);
@@ -55,7 +60,7 @@ public final class JBoss7xAppServer extends AbstractAppServer {
   }
 
   public ServerResult start(ServerParameters parameters) throws Exception {
-    AppServerParameters params = (AppServerParameters) parameters;
+    StandardAppServerParameters params = (StandardAppServerParameters) parameters;
     instanceName = params.instanceName();
     instanceDir = createInstance(params);
     createInstanceDir();
@@ -108,8 +113,8 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     };
     runner.start();
     AppServerUtil.waitForPort(start_port, START_STOP_TIMEOUT);
-    // need some time to start and deploy? TODO: better way to check this than to just blindly sleep
-    Thread.sleep(5000);
+    deployStartupMonitorWar(params);
+    waitUntilWarsDeployed(START_STOP_TIMEOUT);
     System.err.println("Started " + instanceName + " on port " + start_port);
     return new AppServerResult(start_port, this);
   }
@@ -208,6 +213,29 @@ public final class JBoss7xAppServer extends AbstractAppServer {
         Map.Entry war_entry = (Map.Entry) war_entries_it.next();
         File war_file = (File) war_entry.getValue();
         FileUtils.copyFileToDirectory(war_file, new File(instanceDir, "deployments"));
+      }
+    }
+  }
+
+  private void deployStartupMonitorWar(StandardAppServerParameters params) throws Exception {
+    WARBuilder builder = new WARBuilder(STARTUP_MONITOR_CONTEXT + ".war", new File(this.sandboxDirectory(), "war"));
+    builder.addServlet("ok", "/*", OkServlet.class, new HashMap(), true);
+    Deployment deployment = builder.makeDeployment();
+    FileUtils.copyFileToDirectory(deployment.getFileSystemPath().getFile(), new File(instanceDir, "deployments"));
+  }
+
+  private void waitUntilWarsDeployed(long waitTime) throws Exception {
+    long timeToQuit = System.currentTimeMillis() + waitTime;
+    WebConversation wc = new WebConversation();
+    String fullURL = "http://localhost:" + start_port + "/" + STARTUP_MONITOR_CONTEXT + "/ok";
+    wc.setExceptionsThrownOnErrorStatus(false);
+    while (System.currentTimeMillis() < timeToQuit) {
+      WebResponse response = wc.getResponse(fullURL);
+      int responseCode = response.getResponseCode();
+      if (responseCode == 200) {
+        return;
+      } else {
+        Thread.sleep(500L);
       }
     }
   }
