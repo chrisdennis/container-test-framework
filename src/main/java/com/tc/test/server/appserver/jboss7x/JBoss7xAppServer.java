@@ -86,22 +86,34 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
     // Try a different startup using the java command directly, to work around the boot.log init problem mentioned above
     File logDir = new File(instanceDir, "log");
-    final String[] startCmd = new String[] { JAVA_CMD,
-        "-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath(),
-        "-Dlogging.configuration=file:" + new File(instanceDir, "configuration/logging.properties").getAbsolutePath(),
-        "-jar", new File(serverInstallDir, "jboss-modules.jar").getAbsolutePath(), "-mp",
-        new File(serverInstallDir, "modules").getAbsolutePath(), "-jaxpmodule", "javax.xml.jaxp-provider",
-        "org.jboss.as.standalone", "-Djboss.home.dir=" + serverInstallDir.getAbsolutePath(),
-        "-Djboss.server.base.dir=" + instanceDir.getAbsolutePath() };
 
-    System.err.println("Start cmd: " + Arrays.asList(startCmd));
+    // system properties the tests want to set needed to pass along to JBoss
+    String[] jvmargs = params.jvmArgs().replaceAll("'", "").split("\\s+");
 
+    List cmd = new ArrayList(Arrays.asList(jvmargs));
+    cmd.add(0, JAVA_CMD);
+    cmd.add("-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath());
+    cmd.add("-Dlogging.configuration=file:"
+            + new File(instanceDir, "configuration/logging.properties").getAbsolutePath());
+    cmd.add("-jar");
+    cmd.add(new File(serverInstallDir, "jboss-modules.jar").getAbsolutePath());
+    cmd.add("-mp");
+    cmd.add(new File(serverInstallDir, "modules").getAbsolutePath());
+    cmd.add("-jaxpmodule");
+    cmd.add("javax.xml.jaxp-provider");
+    cmd.add("org.jboss.as.standalone");
+    cmd.add("-Djboss.home.dir=" + serverInstallDir.getAbsolutePath());
+    cmd.add("-Djboss.server.base.dir=" + instanceDir.getAbsolutePath());
+
+    System.err.println("Start cmd: " + cmd);
+
+    final String[] cmdArray = (String[]) cmd.toArray(new String[] {});
     final String nodeLogFile = new File(instanceDir + ".log").getAbsolutePath();
     runner = new Thread("runner for " + instanceName) {
       @Override
       public void run() {
         try {
-          Result result = Exec.execute(startCmd, nodeLogFile, null, instanceDir);
+          Result result = Exec.execute(cmdArray, nodeLogFile, null, instanceDir);
           if (result.getExitCode() != 0) {
             System.err.println(result);
           }
