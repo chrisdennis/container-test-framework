@@ -375,16 +375,20 @@ public class ServerManager {
 
       builder.addFileAsResource(makeJbossContextXml(config.appServerInfo()), "WEB-INF");
 
-      // special additional rules for jboss7x
+      // jboss7-web.xml file format changed, so we need to make sure to get the right one
       if (isJboss7x()) {
-        System.err.println("Doing some specific setup for Jboss7");
         try {
           builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_MODE_LOAD_CLASS));
           builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_RUNTIME_LOAD_CLASS));
         } catch (ClassNotFoundException e1) {
           throw new RuntimeException(e1);
         }
-        builder.addFileAsResource(makeJbossWebXml(config.appServerInfo()), "WEB-INF");
+        builder.addFileAsResource(makeJboss7WebXml(config.appServerInfo()), "WEB-INF");
+      }
+    } else {
+      if (isJboss7x()) {
+        // not a session test, so we don't want to use the SessionValve but we still need to change the file format
+        builder.addFileAsResource(makeEmptyJboss7WebXml(), "WEB-INF");
       }
     }
   }
@@ -396,20 +400,10 @@ public class ServerManager {
     xml += "  " + makeValveDef().toXml() + "\n";
     xml += "</Context>\n";
 
-    FileOutputStream out = null;
-    try {
-      out = new FileOutputStream(tmp);
-      out.write(xml.getBytes());
-    } catch (IOException ioe) {
-      throw new RuntimeException(ioe);
-    } finally {
-      IOUtils.closeQuietly(out);
-    }
-
-    return tmp;
+    return writeJbossXml(xml, tmp);
   }
 
-  private File makeJbossWebXml(AppServerInfo appServerInfo) {
+  private File makeJboss7WebXml(AppServerInfo appServerInfo) {
     File tmp = new File(this.sandbox, "jboss-web.xml");
     String xml = "";
     xml += "<jboss-web>\n";
@@ -424,17 +418,29 @@ public class ServerManager {
     xml += "  </valve>\n";
     xml += "</jboss-web>\n";
 
+    return writeJbossXml(xml, tmp);
+  }
+
+  private File makeEmptyJboss7WebXml() {
+    File tmp = new File(this.sandbox, "jboss-web.xml");
+    String xml = "";
+    xml += "<jboss-web>\n";
+    xml += "</jboss-web>\n";
+
+    return writeJbossXml(xml, tmp);
+  }
+
+  private File writeJbossXml(String xml, File target) {
     FileOutputStream out = null;
     try {
-      out = new FileOutputStream(tmp);
+      out = new FileOutputStream(target);
       out.write(xml.getBytes());
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
     } finally {
       IOUtils.closeQuietly(out);
     }
-
-    return tmp;
+    return target;
   }
 
   private static class Mappings {
