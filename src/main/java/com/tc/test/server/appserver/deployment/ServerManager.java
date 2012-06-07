@@ -246,7 +246,7 @@ public class ServerManager {
     // File format for the jboss-web.xml changed in jboss7, so change it here
     // TODO: change how the default is picked up so we don't need to have this sort of logic for jboss8+?
     if (isJboss7x()) {
-      if (isSessionTest) {
+      if (isSessionTest && clustered) {
         builder.addFileAsResource(makeJboss7WebXml(config.appServerInfo()), "WEB-INF");
       } else {
         builder.addFileAsResource(makeEmptyJboss7WebXml(), "WEB-INF");
