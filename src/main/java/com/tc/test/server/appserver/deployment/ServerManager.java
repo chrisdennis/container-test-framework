@@ -40,7 +40,7 @@ import junit.framework.Assert;
 public class ServerManager {
   private static final String         EXPRESS_MODE_LOAD_CLASS    = "org.terracotta.session.BootStrap";
 
-  private static final String         EXPRESS_RUNTIME_LOAD_CLASS = "org.terracotta.express.Client";
+  private static final String         EXPRESS_RUNTIME_LOAD_CLASS = "org.terracotta.toolkit.ToolkitFactory";
 
   protected final static TCLogger     logger                     = TCLogging.getLogger(ServerManager.class);
   private static int                  appServerIndex             = 0;
