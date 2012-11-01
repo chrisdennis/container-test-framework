@@ -163,7 +163,7 @@ public class ServerManager {
       dsoServer.getJvmArgs().add("-X" + gcLogSwitch + ":" + new File(workDir, "dso-server-gc.log").getAbsolutePath());
     }
 
-    dsoServer.getJvmArgs().add("-Xmx128m");
+    dsoServer.getJvmArgs().add("-Xmx384m");
 
     for (Iterator iterator = jvmArgs.iterator(); iterator.hasNext();) {
       dsoServer.getJvmArgs().add(iterator.next());
