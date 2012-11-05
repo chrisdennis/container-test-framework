@@ -78,7 +78,7 @@ public class DSOServer extends AbstractStoppable {
       l2.setData(workingDir + File.separator + "data");
       l2.setLogs(workingDir + File.separator + "logs");
       if (withPersistentStore) {
-        l2.setPersistenceMode("permanent-store"); // XXX make this one configurable
+        l2.setRestartable(true); // XXX make this one configurable
       }
 
       String configAsString = builder.toString();
