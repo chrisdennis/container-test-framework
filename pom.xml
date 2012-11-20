@@ -15,7 +15,7 @@
   <version>1.4.0-SNAPSHOT</version>
 
   <properties>
-    <terracotta.core.version>3.8.0-SNAPSHOT</terracotta.core.version>
+    <terracotta.core.version>4.0.0-SNAPSHOT</terracotta.core.version>
   </properties>
 
   <dependencies>
