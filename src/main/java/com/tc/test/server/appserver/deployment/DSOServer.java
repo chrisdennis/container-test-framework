@@ -41,7 +41,7 @@ public class DSOServer extends AbstractStoppable {
     this.withPersistentStore = withPersistentStore;
     this.workingDir = workingDir;
     this.configBuilder = configBuilder;
-    this.serverPort = configBuilder.getDsoPort();
+    this.serverPort = configBuilder.getTsaPort();
     this.adminPort = configBuilder.getJmxPort();
     this.groupPort = configBuilder.getGroupPort();
   }
@@ -69,16 +69,15 @@ public class DSOServer extends AbstractStoppable {
       configBuilder.saveToFile();
     } else {
       TerracottaConfigBuilder builder = TerracottaConfigBuilder.newMinimalInstance();
-      builder.getSystem().setConfigurationModel("development");
 
       L2ConfigBuilder l2 = builder.getServers().getL2s()[0];
-      l2.setDSOPort(serverPort);
+      l2.setTSAPort(serverPort);
       l2.setJMXPort(adminPort);
-      l2.setL2GroupPort(groupPort);
+      l2.setTSAGroupPort(groupPort);
       l2.setData(workingDir + File.separator + "data");
       l2.setLogs(workingDir + File.separator + "logs");
       if (withPersistentStore) {
-        l2.setRestartable(true); // XXX make this one configurable
+        builder.getServers().setRestartable(true); // XXX make this one configurable
       }
 
       String configAsString = builder.toString();

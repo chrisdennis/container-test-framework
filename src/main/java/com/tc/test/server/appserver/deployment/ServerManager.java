@@ -83,12 +83,12 @@ public class ServerManager {
     installation = AppServerUtil.createAppServerInstallation(factory, installDir, sandbox);
 
     if (DEBUG_MODE) {
-      serverTcConfig.setDsoPort(9510);
+      serverTcConfig.setTsaPort(9510);
       serverTcConfig.setJmxPort(9520);
       serverTcConfig.setGroupPort(9530);
     } else {
       PortChooser pc = new PortChooser();
-      serverTcConfig.setDsoPort(pc.chooseRandomPort());
+      serverTcConfig.setTsaPort(pc.chooseRandomPort());
       serverTcConfig.setJmxPort(pc.chooseRandomPort());
       serverTcConfig.setGroupPort(pc.chooseRandomPort());
     }
@@ -218,7 +218,7 @@ public class ServerManager {
   private TcConfigBuilder prepareClientTcConfig(final TcConfigBuilder clientConfig) throws IOException {
     TcConfigBuilder aCopy = clientConfig.copy();
     aCopy.setTcConfigFile(tcConfigFile);
-    aCopy.setDsoPort(getServerTcConfig().getDsoPort());
+    aCopy.setTsaPort(getServerTcConfig().getTsaPort());
     aCopy.setJmxPort(getServerTcConfig().getJmxPort());
 
     aCopy.saveToFile();
@@ -302,7 +302,7 @@ public class ServerManager {
   }
 
   private String getTcConfigUrl() {
-    return "localhost:" + serverTcConfig.getDsoPort();
+    return "localhost:" + serverTcConfig.getTsaPort();
   }
 
   private boolean useFilter() {
