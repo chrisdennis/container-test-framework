@@ -294,16 +294,10 @@ public final class JBoss7xAppServer extends AbstractAppServer {
   private static class PortLine {
     private final int    lineNumber;
     private final int    portNumber;
-    private final String portID;
 
     public PortLine(String portID, int lineNumber, int portNumber) {
-      this.portID = portID;
       this.lineNumber = lineNumber;
       this.portNumber = portNumber;
-    }
-
-    public String getPortID() {
-      return portID;
     }
 
     public int getLineNumber() {

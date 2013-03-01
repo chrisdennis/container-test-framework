@@ -60,6 +60,7 @@ public class JBossHelper {
     }
   }
 
+  @SuppressWarnings("resource")
   private static int findFirstLine(File file, String pattern) throws IOException {
     BufferedReader reader = null;
 
