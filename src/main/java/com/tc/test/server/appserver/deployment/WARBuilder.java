@@ -98,6 +98,7 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @Override
   public Deployment makeDeployment() throws Exception {
     createWARDirectory();
 
@@ -129,6 +130,7 @@ public class WARBuilder implements DeploymentBuilder {
     return new WARDeployment(warFile, clustered);
   }
 
+  @Override
   public boolean isClustered() {
     return clustered;
   }
@@ -471,21 +473,25 @@ public class WARBuilder implements DeploymentBuilder {
     return sw.toString();
   }
 
+  @Override
   public DeploymentBuilder addBeanDefinitionFile(String beanDefinition) {
     beanDefinitionFiles.add(beanDefinition);
     return this;
   }
 
+  @Override
   public DeploymentBuilder addRemoteService(String remoteName, String beanName, Class interfaceType) {
     remoteServices.add(new RemoteService(remoteName, beanName, interfaceType));
     return this;
   }
 
+  @Override
   public DeploymentBuilder addRemoteService(Class exporterType, String remoteName, String beanName, Class interfaceType) {
     remoteServices.add(new RemoteService(exporterType, remoteName, beanName, interfaceType));
     return this;
   }
 
+  @Override
   public DeploymentBuilder addRemoteService(String beanName, Class interfaceType) {
     addRemoteService(capitalise(beanName), beanName, interfaceType);
     return this;
@@ -511,20 +517,24 @@ public class WARBuilder implements DeploymentBuilder {
     return buffer.toString();
   }
 
+  @Override
   public DeploymentBuilder addRemoteServiceBlock(String block) {
     remoteSvcDefBlock.append(block + "\n");
     return this;
   }
 
+  @Override
   public void setParentApplicationContextRef(String locatorFactorySelector, String parentContextKey) {
     this.contextParams.put(ContextLoader.LOCATOR_FACTORY_SELECTOR_PARAM, locatorFactorySelector);
     this.contextParams.put(ContextLoader.LOCATOR_FACTORY_KEY_PARAM, parentContextKey);
   }
 
+  @Override
   public DeploymentBuilder addDirectoryOrJARContainingClass(Class type) {
     return addDirectoryOrJar(calculatePathToClass(type));
   }
 
+  @Override
   public DeploymentBuilder addDirectoryOrJARContainingClassOfSelectedVersion(Class type, String[] variantNames) {
     String pathSeparator = System.getProperty("path.separator");
 
@@ -542,10 +552,12 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @Override
   public DeploymentBuilder addDirectoryContainingResource(String resource) {
     return addDirectoryOrJar(calculatePathToResource(resource));
   }
 
+  @Override
   public DeploymentBuilder addResource(String location, String includes, String prefix) {
     FileSystemPath path = getResourceDirPath(location, includes);
     File srcDir = extractResourceIfNeeded(path, location, includes);
@@ -553,6 +565,7 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @Override
   public DeploymentBuilder addFileAsResource(File file, String prefix) {
     File srcDir = file.getParentFile();
     resources.add(new ResourceDefinition(srcDir, file.getName(), prefix, null));
@@ -603,6 +616,7 @@ public class WARBuilder implements DeploymentBuilder {
     return rv;
   }
 
+  @Override
   public DeploymentBuilder addResourceFullpath(String location, String includes, String fullpath) {
     FileSystemPath path = getResourceDirPath(location, includes);
     File srcDir = extractResourceIfNeeded(path, location, includes);
@@ -618,21 +632,25 @@ public class WARBuilder implements DeploymentBuilder {
     return path;
   }
 
+  @Override
   public DeploymentBuilder addContextParameter(String name, String value) {
     contextParams.put(name, value);
     return this;
   }
 
+  @Override
   public DeploymentBuilder addSessionConfig(String name, String value) {
     sessionConfig.put(name, value);
     return this;
   }
 
+  @Override
   public DeploymentBuilder addListener(Class listenerClass) {
     listeners.add(listenerClass);
     return this;
   }
 
+  @Override
   public DeploymentBuilder setDispatcherServlet(String name, String mapping, Class servletClass, Map params,
                                                 boolean loadOnStartup) {
     Assert.assertNull(this.dispatcherServletName);
@@ -641,27 +659,32 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @Override
   public DeploymentBuilder addServlet(String name, String mapping, Class servletClass, Map params, boolean loadOnStartup) {
     servlets.add(new ServletDefinition(name, mapping, servletClass, params, loadOnStartup));
     addDirectoryOrJARContainingClass(servletClass);
     return this;
   }
 
+  @Override
   public DeploymentBuilder addFilter(String name, String mapping, Class filterClass, Map params) {
     return addFilter(name, mapping, filterClass, params, null);
   }
 
+  @Override
   public DeploymentBuilder addFilter(String name, String mapping, Class filterClass, Map params,
                                      Set<Dispatcher> dispatchers) {
     filters.add(new FilterDefinition(name, mapping, filterClass, params, dispatchers));
     return this;
   }
 
+  @Override
   public DeploymentBuilder addTaglib(String uri, String location) {
     taglibs.put(uri, location);
     return this;
   }
 
+  @Override
   public DeploymentBuilder addErrorPage(int status, String location) {
     errorPages.put(new Integer(status), location);
     return this;
@@ -676,6 +699,11 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @Override
+  public DeploymentBuilder addDirectoryOrJAR(String path) {
+    return addDirectoryOrJar(new FileSystemPath(new File(path)));
+  }
+
   public static FileSystemPath calculatePathToClass(Class type) {
     URL url = type.getResource("/" + classToPath(type));
     Assert.assertNotNull("Not found: " + type, url);
@@ -683,6 +711,7 @@ public class WARBuilder implements DeploymentBuilder {
     return filepath;
   }
 
+  @Override
   public DeploymentBuilder setNeededWebXml(boolean flag) {
     neededWebXml = flag;
     return this;
@@ -793,5 +822,4 @@ public class WARBuilder implements DeploymentBuilder {
   public enum Dispatcher {
     ERROR, INCLUDE, FORWARD, REQUEST;
   }
-
 }

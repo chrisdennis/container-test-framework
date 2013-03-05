@@ -13,6 +13,8 @@ public interface DeploymentBuilder {
 
   public DeploymentBuilder addDirectoryOrJARContainingClass(Class type);
 
+  public DeploymentBuilder addDirectoryOrJAR(String file);
+
   public DeploymentBuilder addDirectoryOrJARContainingClassOfSelectedVersion(Class type, String[] variantNames);
 
   public DeploymentBuilder addDirectoryContainingResource(String resource);
