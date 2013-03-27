@@ -14,7 +14,6 @@ import com.tc.test.TestConfigObject;
 import com.tc.test.server.appserver.AppServerFactory;
 import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.StandardAppServerParameters;
-import com.tc.test.server.appserver.ValveDefinition;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.test.server.util.Util;
 import com.tc.util.PortChooser;
@@ -33,14 +32,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import junit.framework.Assert;
 
 public class ServerManager {
-  private static final String         EXPRESS_MODE_LOAD_CLASS    = "org.terracotta.session.BootStrap";
+  private static final String         SESSIONS_LOAD_CLASS        = "com.terracotta.session.BaseExpressSessionFilter";
 
-  private static final String         EXPRESS_RUNTIME_LOAD_CLASS = "org.terracotta.toolkit.ToolkitFactory";
+  private static final String         TOOLKIT_RUNTIME_LOAD_CLASS = "org.terracotta.toolkit.ToolkitFactory";
 
   protected final static TCLogger     logger                     = TCLogging.getLogger(ServerManager.class);
   private static int                  appServerIndex             = 0;
@@ -96,7 +94,7 @@ public class ServerManager {
 
   private boolean isTerracottaSessionJarPresent() {
     try {
-      Class.forName(EXPRESS_MODE_LOAD_CLASS);
+      Class.forName(SESSIONS_LOAD_CLASS);
       return true;
     } catch (Exception e) {
       return false;
@@ -246,11 +244,7 @@ public class ServerManager {
     // File format for the jboss-web.xml changed in jboss7, so change it here
     // TODO: change how the default is picked up so we don't need to have this sort of logic for jboss8+?
     if (isJboss7x()) {
-      if (isSessionTest && clustered) {
-        builder.addFileAsResource(makeJboss7WebXml(config.appServerInfo()), "WEB-INF");
-      } else {
-        builder.addFileAsResource(makeEmptyJboss7WebXml(), "WEB-INF");
-      }
+      builder.addFileAsResource(makeEmptyJboss7WebXml(), "WEB-INF");
     }
     return builder;
   }
@@ -292,22 +286,12 @@ public class ServerManager {
            + ", warDir=" + warDir.getAbsolutePath() + ", jvmArgs=" + jvmArgs + '}';
   }
 
-  private ValveDefinition makeValveDef() {
-    ValveDefinition valve = new ValveDefinition(Mappings.getClassForAppServer(config.appServerInfo()));
-    valve.setExpressVal(true);
-    for (Entry<String, String> attr : getConfigAttributes().entrySet()) {
-      valve.setAttribute(attr.getKey(), attr.getValue());
-    }
-    return valve;
-  }
-
   private String getTcConfigUrl() {
     return "localhost:" + serverTcConfig.getTsaPort();
   }
 
   private boolean useFilter() {
-    int appId = config.appServerId();
-    return appId == AppServerInfo.WEBLOGIC || appId == AppServerInfo.JETTY || appId == AppServerInfo.WEBSPHERE;
+    return true;
   }
 
   private boolean isJboss7x() {
@@ -329,14 +313,10 @@ public class ServerManager {
   }
 
   private void addExpressModeParams(StandardAppServerParameters params) {
-    setupExpressJarContaining(params, EXPRESS_RUNTIME_LOAD_CLASS);
+    setupExpressJarContaining(params, TOOLKIT_RUNTIME_LOAD_CLASS);
 
     if (isSessionTest) {
-      setupExpressJarContaining(params, EXPRESS_MODE_LOAD_CLASS);
-
-      if (config.appServerId() == AppServerInfo.TOMCAT) {
-        params.addValve(makeValveDef());
-      }
+      setupExpressJarContaining(params, SESSIONS_LOAD_CLASS);
     }
   }
 
@@ -365,8 +345,8 @@ public class ServerManager {
     if (isSessionTest) {
       if (useFilter()) {
         try {
-          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_MODE_LOAD_CLASS));
-          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_RUNTIME_LOAD_CLASS));
+          builder.addDirectoryOrJARContainingClass(Class.forName(SESSIONS_LOAD_CLASS));
+          builder.addDirectoryOrJARContainingClass(Class.forName(TOOLKIT_RUNTIME_LOAD_CLASS));
         } catch (ClassNotFoundException e1) {
           throw new RuntimeException(e1);
         }
@@ -382,46 +362,16 @@ public class ServerManager {
         builder.addFilter("terracotta-filter", "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
       }
 
-      builder.addFileAsResource(makeJbossContextXml(config.appServerInfo()), "WEB-INF");
-
       // not using filter, but jboss7 still needs the express jars
       if (isJboss7x()) {
         try {
-          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_MODE_LOAD_CLASS));
-          builder.addDirectoryOrJARContainingClass(Class.forName(EXPRESS_RUNTIME_LOAD_CLASS));
+          builder.addDirectoryOrJARContainingClass(Class.forName(SESSIONS_LOAD_CLASS));
+          builder.addDirectoryOrJARContainingClass(Class.forName(TOOLKIT_RUNTIME_LOAD_CLASS));
         } catch (ClassNotFoundException e1) {
           throw new RuntimeException(e1);
         }
       }
     }
-  }
-
-  private File makeJbossContextXml(AppServerInfo appServerInfo) {
-    File tmp = new File(this.sandbox, "context.xml");
-    String xml = "";
-    xml += "<Context>\n";
-    xml += "  " + makeValveDef().toXml() + "\n";
-    xml += "</Context>\n";
-
-    return writeJbossXml(xml, tmp);
-  }
-
-  private File makeJboss7WebXml(AppServerInfo appServerInfo) {
-    File tmp = new File(this.sandbox, "jboss-web.xml");
-    String xml = "";
-    xml += "<jboss-web>\n";
-    xml += "  <valve>\n";
-    xml += "    <class-name>org.terracotta.session.TerracottaJboss7xSessionValve</class-name>\n";
-    for (Entry<String, String> attr : getConfigAttributes().entrySet()) {
-      xml += "    <param>\n";
-      xml += "      <param-name>" + attr.getKey() + "</param-name>\n";
-      xml += "      <param-value>" + attr.getValue() + "</param-value>\n";
-      xml += "    </param>\n";
-    }
-    xml += "  </valve>\n";
-    xml += "</jboss-web>\n";
-
-    return writeJbossXml(xml, tmp);
   }
 
   private File makeEmptyJboss7WebXml() {
@@ -450,18 +400,18 @@ public class ServerManager {
     private static final Map<String, String> mappings = new HashMap<String, String>();
 
     static {
-      mappings.put("jboss-4.0.", "TerracottaJboss40xSessionValve");
-      mappings.put("jboss-4.2.", "TerracottaJboss42xSessionValve");
-      mappings.put("jboss-5.1.", "TerracottaJboss51xSessionValve");
-      mappings.put("jboss-6.0.", "TerracottaJboss60xSessionValve");
-      mappings.put("jboss-7.1.", "TerracottaJboss7xSessionValve");
+      mappings.put("jboss-4.0.", "TerracottaJboss40xSessionFilter");
+      mappings.put("jboss-4.2.", "TerracottaJboss42xSessionFilter");
+      mappings.put("jboss-5.1.", "TerracottaJboss51xSessionFilter");
+      mappings.put("jboss-6.0.", "TerracottaJboss60xSessionFilter");
+      mappings.put("jboss-7.1.", "TerracottaJboss70xSessionFilter");
       mappings.put("weblogic-10.", "TerracottaWeblogic10xSessionFilter");
       mappings.put("jetty-6.1.", "TerracottaJetty61xSessionFilter");
       mappings.put("jetty-7.4.", "TerracottaJetty74xSessionFilter");
-      mappings.put("tomcat-5.0.", "TerracottaTomcat50xSessionValve");
-      mappings.put("tomcat-5.5.", "TerracottaTomcat55xSessionValve");
-      mappings.put("tomcat-6.0.", "TerracottaTomcat60xSessionValve");
-      mappings.put("tomcat-7.0.", "TerracottaTomcat70xSessionValve");
+      mappings.put("tomcat-5.0.", "TerracottaTomcat50xSessionFilter");
+      mappings.put("tomcat-5.5.", "TerracottaTomcat55xSessionFilter");
+      mappings.put("tomcat-6.0.", "TerracottaTomcat60xSessionFilter");
+      mappings.put("tomcat-7.0.", "TerracottaTomcat70xSessionFilter");
       mappings.put("websphere-7.0.", "TerracottaWebsphere70xSessionFilter");
     }
 
