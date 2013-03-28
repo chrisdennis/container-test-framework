@@ -81,7 +81,7 @@ public abstract class AppServerFactory {
       case AppServerInfo.GLASSFISH:
         if ("v1".equals(majorVersion)) return new GlassfishV1AppServerFactory();
         if ("v2".equals(majorVersion)) return new GlassfishV2AppServerFactory();
-        if ("v3".equals(majorVersion)) return new GlassfishV3AppServerFactory();
+        if ("3".equals(majorVersion)) return new GlassfishV3AppServerFactory();
         break;
       case AppServerInfo.JETTY:
         if ("6".equals(majorVersion)) return new Jetty6xAppServerFactory();

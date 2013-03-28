@@ -17,6 +17,9 @@ import com.tc.test.server.util.RetryException;
 import com.tc.text.Banner;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +37,26 @@ public class GlassfishV3AppServer extends AbstractGlassfishAppServer {
   @Override
   protected File getStopScript(final AppServerParameters params) {
     return new File(new File(new File(serverInstallDirectory(), "glassfish"), "bin"), getPlatformScript("stopserv"));
+  }
+
+  @Override
+  protected synchronized File getPasswdFile() throws IOException {
+    if (passwdFile == null) {
+      passwdFile = new File(instanceDir.getParentFile(), "passwd" + System.currentTimeMillis() + ".txt");
+
+      PrintWriter out = null;
+      try {
+        out = new PrintWriter(new FileOutputStream(passwdFile));
+        out.println("AS_ADMIN_ADMINPASSWORD=admin");
+        out.println("AS_ADMIN_MASTERPASSWORD=changeit");
+      } finally {
+        if (out != null) {
+          out.close();
+        }
+      }
+    }
+
+    return passwdFile;
   }
 
   @Override

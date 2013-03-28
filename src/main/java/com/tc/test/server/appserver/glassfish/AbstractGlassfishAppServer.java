@@ -81,8 +81,8 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
   protected Thread            runner;
   protected File              instanceDir;
 
-  protected int               httpPort;
-  protected int               adminPort;
+  protected int               httpPort           = pc.chooseRandomPort();
+  protected int               adminPort          = pc.chooseRandomPort();
 
   private Process             process;
 
@@ -163,6 +163,7 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     return asAdminScript;
   }
 
+  @Override
   public ServerResult start(final ServerParameters rawParams) throws Exception {
     AppServerParameters params = (AppServerParameters) rawParams;
     for (int i = 0; i < STARTUP_RETRIES; i++) {
@@ -187,9 +188,6 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
   }
 
   protected ServerResult start0(final AppServerParameters params) throws Exception {
-    httpPort = pc.chooseRandomPort();
-    adminPort = pc.chooseRandomPort();
-
     instanceDir = createInstance(params);
 
     instanceDir.delete(); // createDomain will fail if directory already exists
@@ -415,8 +413,10 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     }
 
     // deploy failed. Stop the process and see if it the known "web1" problem
-    process.destroy();
-    process = null;
+    if (process != null) {
+      process.destroy();
+      process = null;
+    }
 
     ThreadUtil.reallySleep(3000);
     List<CharSequence> hits = Grep
@@ -522,8 +522,11 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
 
     NodeList list = document.getElementsByTagName("java-config");
 
-    if (list.getLength() != 1) { throw new RuntimeException("wrong number of elements " + list.getLength()); }
+    // starting glassfish-3.x, this assertion is no longer true
+    // there are multiple <config> allowed in domain.xml and each can have its own java-config
+    // if (list.getLength() != 1) { throw new RuntimeException("wrong number of elements " + list.getLength()); }
 
+    // you're only blindingly getting the first node, could be not the one you
     Node javaConfig = list.item(0);
 
     // if you want debugging of the spawned glassfish, play with this
@@ -566,6 +569,7 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     node.appendChild(element);
   }
 
+  @Override
   public void stop(final ServerParameters rawParams) throws Exception {
     AppServerParameters params = (AppServerParameters) rawParams;
     System.err.println("Stopping instance on port " + httpPort + "...");
