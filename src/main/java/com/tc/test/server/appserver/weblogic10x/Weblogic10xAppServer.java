@@ -50,7 +50,7 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
 
   private static class TCWebLogic10xInstalledLocalContainer extends WebLogic10xInstalledLocalContainer {
     private final AppServerParameters params;
-    
+
     public TCWebLogic10xInstalledLocalContainer(LocalConfiguration configuration, AppServerParameters params) {
       super(configuration);
       this.params = params;
@@ -127,8 +127,7 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
       if (appServerInfo.toString().equals("weblogic-10.0.mp1")) {
         classpath.createPathElement()
             .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.0.1.0.jar"));
-        classpath.createPathElement().setLocation(
-                                                  new File(modulesDir,
+        classpath.createPathElement().setLocation(new File(modulesDir,
                                                            "features/com.bea.cie.common-plugin.launch_2.1.2.0.jar"));
         classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.6.5/lib/ant-all.jar"));
         classpath.createPathElement()
@@ -137,16 +136,19 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
         classpath.createPathElement()
             .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.0.0.jar"));
         classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.6.5/lib/ant-all.jar"));
-        classpath.createPathElement().setLocation(
-                                                  new File(modulesDir,
+        classpath.createPathElement().setLocation(new File(modulesDir,
                                                            "net.sf.antcontrib_1.0.0.0_1-0b2/lib/ant-contrib.jar"));
       } else if (appServerInfo.toString().equals("weblogic-10.3.1")) {
         classpath.createPathElement()
             .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.1.0.jar"));
         classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.0/lib/ant-all.jar"));
-        classpath.createPathElement().setLocation(
-                                                  new File(modulesDir,
+        classpath.createPathElement().setLocation(new File(modulesDir,
                                                            "net.sf.antcontrib_1.0.0.0_1-0b2/lib/ant-contrib.jar"));
+      } else if (appServerInfo.toString().equals("weblogic-10.3.6")) {
+        classpath.createPathElement()
+            .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.6.0.jar"));
+        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.1.jar"));
+        classpath.createPathElement().setLocation(new File(modulesDir, "net.sf.antcontrib_1.1.0.0_1-0b2.jar"));
       }
       params.properties().setProperty("classpath", classpath.toString());
     }
