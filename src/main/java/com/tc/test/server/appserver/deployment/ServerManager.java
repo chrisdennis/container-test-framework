@@ -416,6 +416,7 @@ public class ServerManager {
       mappings.put("websphere-7.0.", "TerracottaWebsphere70xSessionFilter");
       mappings.put("websphere-8.0.", "TerracottaWebsphere80xSessionFilter");
       mappings.put("websphere-8.5.", "TerracottaWebsphere85xSessionFilter");
+      mappings.put("resin-4.0.", "TerracottaResin40xSessionFilter");
     }
 
     static String getClassForAppServer(AppServerInfo info) {

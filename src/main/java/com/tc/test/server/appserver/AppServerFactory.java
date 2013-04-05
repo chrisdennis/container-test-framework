@@ -19,6 +19,7 @@ import com.tc.test.server.appserver.jboss7x.JBoss7xAppServerFactory;
 import com.tc.test.server.appserver.jetty6x.Jetty6xAppServerFactory;
 import com.tc.test.server.appserver.jetty7x.Jetty7xAppServerFactory;
 import com.tc.test.server.appserver.resin31x.Resin31xAppServerFactory;
+import com.tc.test.server.appserver.resin40x.Resin40xAppServerFactory;
 import com.tc.test.server.appserver.tomcat5x.Tomcat5xAppServerFactory;
 import com.tc.test.server.appserver.tomcat6x.Tomcat6xAppServerFactory;
 import com.tc.test.server.appserver.tomcat7x.Tomcat7xAppServerFactory;
@@ -91,6 +92,7 @@ public abstract class AppServerFactory {
         break;
       case AppServerInfo.RESIN:
         if ("3".equals(majorVersion)) return new Resin31xAppServerFactory();
+        if ("4".equals(majorVersion)) return new Resin40xAppServerFactory();
         break;
       case AppServerInfo.WEBSPHERE:
         if ("7".equals(majorVersion)) return new Was7xAppServerFactory();
