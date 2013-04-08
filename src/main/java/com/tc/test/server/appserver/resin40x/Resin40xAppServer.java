@@ -93,7 +93,8 @@ public final class Resin40xAppServer extends AbstractAppServer {
     if (result.getExitCode() != 0) {
       System.err.println(result);
     }
-
+    // we wait until watchdog port to shutdown before asserting the Resin server is down
+    AppServerUtil.waitForPortToShutdown(watchdog_port, START_STOP_TIMEOUT);
     if (runner != null) {
       runner.join(START_STOP_TIMEOUT);
       if (runner.isAlive()) {

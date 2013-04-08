@@ -40,6 +40,16 @@ public class AppServerUtil {
     throw new RuntimeException("Port " + port + " cannot be reached, timeout = " + waitTime);
   }
 
+  public static void waitForPortToShutdown(int port, long waitTime) {
+    final long timeout = System.currentTimeMillis() + waitTime;
+    while (System.currentTimeMillis() < timeout) {
+      if (!pingPort(port)) { return; }
+      ThreadUtil.reallySleep(1000);
+    }
+
+    throw new RuntimeException("Port " + port + " cannot be reached, timeout = " + waitTime);
+  }
+
   public static boolean pingPort(int port) {
     Socket s = null;
     try {
