@@ -22,7 +22,6 @@ import com.tc.util.TcConfigBuilder;
 import com.tc.util.runtime.Os;
 import com.tc.util.runtime.Vm;
 
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -348,7 +347,8 @@ public class ServerManager {
       if (useFilter()) {
         try {
           builder.addDirectoryOrJARContainingClass(Class.forName(SESSIONS_LOAD_CLASS));
-          builder.addDirectoriesOrJARs(TestBaseUtil.getToolkitRuntimeDependencies(Toolkit.class));
+          builder.addDirectoriesOrJARs(TestBaseUtil.getToolkitRuntimeDependencies(Class
+              .forName(TOOLKIT_RUNTIME_LOAD_CLASS)));
         } catch (ClassNotFoundException e1) {
           throw new RuntimeException(e1);
         }
