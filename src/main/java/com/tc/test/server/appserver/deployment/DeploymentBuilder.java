@@ -6,6 +6,7 @@
 package com.tc.test.server.appserver.deployment;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +15,8 @@ public interface DeploymentBuilder {
   public DeploymentBuilder addDirectoryOrJARContainingClass(Class type);
 
   public DeploymentBuilder addDirectoryOrJAR(String file);
+
+  public DeploymentBuilder addDirectoriesOrJARs(List<String> files);
 
   public DeploymentBuilder addDirectoryOrJARContainingClassOfSelectedVersion(Class type, String[] variantNames);
 

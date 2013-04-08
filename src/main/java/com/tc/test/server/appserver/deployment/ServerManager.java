@@ -6,6 +6,7 @@ package com.tc.test.server.appserver.deployment;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.terracotta.test.util.TestBaseUtil;
 
 import com.tc.logging.TCLogger;
 import com.tc.logging.TCLogging;
@@ -21,6 +22,7 @@ import com.tc.util.TcConfigBuilder;
 import com.tc.util.runtime.Os;
 import com.tc.util.runtime.Vm;
 
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -346,7 +348,7 @@ public class ServerManager {
       if (useFilter()) {
         try {
           builder.addDirectoryOrJARContainingClass(Class.forName(SESSIONS_LOAD_CLASS));
-          builder.addDirectoryOrJARContainingClass(Class.forName(TOOLKIT_RUNTIME_LOAD_CLASS));
+          builder.addDirectoriesOrJARs(TestBaseUtil.getToolkitRuntimeDependencies(Toolkit.class));
         } catch (ClassNotFoundException e1) {
           throw new RuntimeException(e1);
         }

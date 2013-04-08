@@ -704,6 +704,14 @@ public class WARBuilder implements DeploymentBuilder {
     return addDirectoryOrJar(new FileSystemPath(new File(path)));
   }
 
+  @Override
+  public DeploymentBuilder addDirectoriesOrJARs(List<String> files) {
+    for (String file : files) {
+      addDirectoryOrJAR(file);
+    }
+    return this;
+  }
+
   public static FileSystemPath calculatePathToClass(Class type) {
     URL url = type.getResource("/" + classToPath(type));
     Assert.assertNotNull("Not found: " + type, url);
