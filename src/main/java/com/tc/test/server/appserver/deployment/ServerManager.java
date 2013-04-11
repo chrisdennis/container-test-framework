@@ -406,7 +406,7 @@ public class ServerManager {
       mappings.put("jboss-4.2.", "TerracottaJboss42xSessionFilter");
       mappings.put("jboss-5.1.", "TerracottaJboss51xSessionFilter");
       mappings.put("jboss-6.0.", "TerracottaJboss60xSessionFilter");
-      mappings.put("jboss-7.1.", "TerracottaJboss70xSessionFilter");
+      mappings.put("jboss-7.1.", "TerracottaJboss7xSessionFilter");
       mappings.put("weblogic-10.", "TerracottaWeblogic10xSessionFilter");
       mappings.put("weblogic-12.", "TerracottaWeblogic12xSessionFilter");
       mappings.put("jetty-6.1.", "TerracottaJetty61xSessionFilter");
@@ -419,6 +419,7 @@ public class ServerManager {
       mappings.put("websphere-8.0.", "TerracottaWebsphere80xSessionFilter");
       mappings.put("websphere-8.5.", "TerracottaWebsphere85xSessionFilter");
       mappings.put("resin-4.0.", "TerracottaResin40xSessionFilter");
+      mappings.put("glassfish-3.1.", "TerracottaGlassfish3xSessionFilter");
     }
 
     static String getClassForAppServer(AppServerInfo info) {
