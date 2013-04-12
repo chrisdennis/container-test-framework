@@ -407,8 +407,8 @@ public class ServerManager {
       mappings.put("jboss-5.1.", "TerracottaJboss51xSessionFilter");
       mappings.put("jboss-6.0.", "TerracottaJboss60xSessionFilter");
       mappings.put("jboss-7.1.", "TerracottaJboss71xSessionFilter");
-      mappings.put("weblogic-10.", "TerracottaWeblogic10xSessionFilter");
-      mappings.put("weblogic-12.", "TerracottaWeblogic12xSessionFilter");
+      mappings.put("weblogic-10.3.", "TerracottaWeblogic103xSessionFilter");
+      mappings.put("weblogic-12.1.", "TerracottaWeblogic121xSessionFilter");
       mappings.put("jetty-6.1.", "TerracottaJetty61xSessionFilter");
       mappings.put("jetty-7.4.", "TerracottaJetty74xSessionFilter");
       mappings.put("tomcat-5.0.", "TerracottaTomcat50xSessionFilter");
