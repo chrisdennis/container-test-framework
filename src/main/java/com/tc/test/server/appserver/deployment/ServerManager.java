@@ -412,7 +412,7 @@ public class ServerManager {
       mappings.put("jetty-6.1.", "TerracottaJetty74xSessionFilter");
       mappings.put("jetty-7.4.", "TerracottaJetty74xSessionFilter");
       mappings.put("tomcat-5.0.", "TerracottaTomcat60xSessionFilter");
-      mappings.put("tomcat-5.5.", "TerracottaTomcat60xSessionFilter");
+      mappings.put("tomcat-5.5.", "TerracottaTomcat55xSessionFilter");
       mappings.put("tomcat-6.0.", "TerracottaTomcat60xSessionFilter");
       mappings.put("tomcat-7.0.", "TerracottaTomcat70xSessionFilter");
       mappings.put("websphere-7.0.", "TerracottaWebsphere70xSessionFilter");
