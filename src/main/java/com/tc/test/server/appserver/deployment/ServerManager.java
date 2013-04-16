@@ -37,7 +37,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 public class ServerManager {
-  private static final String         SESSIONS_LOAD_CLASS        = "com.terracotta.session.BaseExpressSessionFilter";
+  private static final String         SESSIONS_LOAD_CLASS        = "com.terracotta.session.BaseSessionFilter";
 
   private static final String         TOOLKIT_RUNTIME_LOAD_CLASS = "org.terracotta.toolkit.ToolkitFactory";
 
