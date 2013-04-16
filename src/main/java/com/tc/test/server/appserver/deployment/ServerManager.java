@@ -402,16 +402,16 @@ public class ServerManager {
     private static final Map<String, String> mappings = new HashMap<String, String>();
 
     static {
-      mappings.put("jboss-4.0.", "TerracottaJboss71xSessionFilter");
-      mappings.put("jboss-4.2.", "TerracottaJboss71xSessionFilter");
-      mappings.put("jboss-5.1.", "TerracottaJboss71xSessionFilter");
-      mappings.put("jboss-6.0.", "TerracottaJboss71xSessionFilter");
+      mappings.put("jboss-4.0.", "TerracottaJboss40xSessionFilter");
+      mappings.put("jboss-4.2.", "TerracottaJboss42xSessionFilter");
+      mappings.put("jboss-5.1.", "TerracottaJboss51xSessionFilter");
+      mappings.put("jboss-6.0.", "TerracottaJboss60xSessionFilter");
       mappings.put("jboss-7.1.", "TerracottaJboss71xSessionFilter");
       mappings.put("weblogic-10.3.", "TerracottaWeblogic103xSessionFilter");
       mappings.put("weblogic-12.1.", "TerracottaWeblogic121xSessionFilter");
-      mappings.put("jetty-6.1.", "TerracottaJetty74xSessionFilter");
+      mappings.put("jetty-6.1.", "TerracottaJetty61xSessionFilter");
       mappings.put("jetty-7.4.", "TerracottaJetty74xSessionFilter");
-      mappings.put("tomcat-5.0.", "TerracottaTomcat60xSessionFilter");
+      mappings.put("tomcat-5.0.", "TerracottaTomcat50xSessionFilter");
       mappings.put("tomcat-5.5.", "TerracottaTomcat55xSessionFilter");
       mappings.put("tomcat-6.0.", "TerracottaTomcat60xSessionFilter");
       mappings.put("tomcat-7.0.", "TerracottaTomcat70xSessionFilter");
