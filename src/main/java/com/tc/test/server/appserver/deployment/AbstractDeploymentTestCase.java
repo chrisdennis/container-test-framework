@@ -7,7 +7,6 @@ package com.tc.test.server.appserver.deployment;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.meterware.httpunit.HttpUnitOptions;
 import com.tc.test.AppServerInfo;
 import com.tc.test.TCTestCase;
 import com.tc.test.TestConfigObject;
@@ -38,8 +37,7 @@ public abstract class AbstractDeploymentTestCase extends TCTestCase {
   }
 
   public AbstractDeploymentTestCase() {
-    // disable javascript by default
-    HttpUnitOptions.setScriptingEnabled(false);
+    //
   }
 
   @Override

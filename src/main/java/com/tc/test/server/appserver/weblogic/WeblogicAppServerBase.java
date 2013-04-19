@@ -5,8 +5,8 @@ package com.tc.test.server.appserver.weblogic;
 
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.StandardAppServerParameters;
 import com.tc.test.server.appserver.cargo.CargoAppServer;
@@ -34,19 +34,17 @@ public abstract class WeblogicAppServerBase extends CargoAppServer {
     params.addDeployment(CONTEXT, deployment);
   }
 
-  public static void  doStop(LocalConfiguration configuration) throws Exception {
+  public static void doStop(LocalConfiguration configuration) throws Exception {
     // The standard weblogic mechanisms for stopping the server fail sporadically, so call this servlet to initiate
     // shutdown from inside the container.
 
     String port = configuration.getPropertyValue("cargo.servlet.port");
-    WebConversation wc = new WebConversation();
+    WebClient wc = new WebClient();
     String fullURL = "http://localhost:" + port + "/WLS_SHUTDOWN_HACK/Go";
-    wc.setExceptionsThrownOnErrorStatus(true);
-    WebResponse response = wc.getResponse(fullURL);
-    Assert.assertEquals("Server error:\n" + response.getText(), 200, response.getResponseCode());
-    Assert.assertEquals("Server error:\n" + response.getText(), 0, response.getContentLength());
+    HtmlPage response = wc.getPage(fullURL);
+    Assert.assertEquals("Server error:\n" + response.asText(), 200, response.getWebResponse().getStatusCode());
+    Assert.assertEquals("Server error:\n" + response.asText(), 0, response.getWebResponse().getContentAsString()
+        .length());
   }
-
-
 
 }

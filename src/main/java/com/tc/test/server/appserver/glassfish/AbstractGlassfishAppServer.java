@@ -12,8 +12,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.tc.lcp.CargoLinkedChildProcess;
 import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
@@ -276,15 +276,15 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
 
   protected void waitForPing(File nodeLogFile) throws Exception {
     String pingUrl = "http://localhost:" + httpPort + "/ping/index.html";
-    WebConversation wc = new WebConversation();
-    wc.setExceptionsThrownOnErrorStatus(false);
+    WebClient wc = new WebClient();
+    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     int tries = 10;
     for (int i = 0; i < tries; i++) {
-      WebResponse response;
+      HtmlPage response;
       try {
         System.err.println("Pinging " + pingUrl + " - try #" + i);
-        response = wc.getResponse(pingUrl);
-        if (response.getResponseCode() == 200) return;
+        response = wc.getPage(pingUrl);
+        if (response.getWebResponse().getStatusCode() == 200) return;
       } catch (Exception e) {
         // ignored
       }

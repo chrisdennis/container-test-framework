@@ -4,15 +4,12 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import org.xml.sax.SAXException;
-
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.tc.test.server.appserver.StandardAppServerParameters;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 public interface WebApplicationServer extends Server {
 
@@ -22,9 +19,9 @@ public interface WebApplicationServer extends Server {
 
   public WebApplicationServer addEarDeployment(Deployment earDeployment);
 
-  public WebResponse ping(String url) throws MalformedURLException, IOException, SAXException;
+  public HtmlPage ping(String url) throws IOException;
 
-  public WebResponse ping(String url, WebConversation wc) throws MalformedURLException, IOException, SAXException;
+  public HtmlPage ping(String url, WebClient wc) throws IOException;
 
   public int getPort();
 

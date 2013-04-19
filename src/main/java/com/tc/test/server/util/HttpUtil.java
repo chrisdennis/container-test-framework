@@ -42,11 +42,11 @@ public final class HttpUtil {
   }
 
   public static boolean getBoolean(URL url, HttpClient client) throws ConnectException, IOException {
-    return Boolean.valueOf(getResponseBody(url, client)).booleanValue();
+    return Boolean.valueOf(getPageBody(url, client)).booleanValue();
   }
 
   public static boolean[] getBooleanValues(URL url, HttpClient client) throws ConnectException, IOException {
-    String responseBody = getResponseBody(url, client);
+    String responseBody = getPageBody(url, client);
     String[] lines = responseBody.split("\n");
     boolean[] values = new boolean[lines.length];
     for (int i = 0; i < lines.length; i++) {
@@ -55,11 +55,11 @@ public final class HttpUtil {
     return values;
   }
 
-  public static String getResponseBody(URL url, HttpClient client) throws HttpException, IOException {
-    return getResponseBody(url, client, false);
+  public static String getPageBody(URL url, HttpClient client) throws HttpException, IOException {
+    return getPageBody(url, client, false);
   }
   
-  public static String getResponseBody(URL url, HttpClient client, boolean retryIfFail) throws HttpException, IOException {
+  public static String getPageBody(URL url, HttpClient client, boolean retryIfFail) throws HttpException, IOException {
     StringBuffer response = new StringBuffer(100);
     Cookie[] cookies = client.getState().getCookies();
     for (int i = 0; i < cookies.length; i++) {
@@ -83,7 +83,7 @@ public final class HttpUtil {
         // make formatter sane
         throw new HttpException("The http client has encountered a status code other than ok for the url: " + url
                                    + " status: " + HttpStatus.getStatusText(status));
-      }      
+      }
       reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
       String line;
       while ((line = reader.readLine()) != null) {
@@ -97,11 +97,11 @@ public final class HttpUtil {
   }
 
   public static int getInt(URL url, HttpClient client) throws ConnectException, IOException {
-    return Integer.valueOf(getResponseBody(url, client)).intValue();
+    return Integer.valueOf(getPageBody(url, client)).intValue();
   }
 
   public static int[] getIntValues(URL url, HttpClient client) throws ConnectException, IOException {
-    String responseBody = getResponseBody(url, client);
+    String responseBody = getPageBody(url, client);
     String[] lines = responseBody.split("\n");
     int[] values = new int[lines.length];
     for (int i = 0; i < lines.length; i++) {
@@ -120,6 +120,7 @@ public final class HttpUtil {
 
     static final NoRetryHandler INSTANCE = new NoRetryHandler();
 
+    @Override
     public boolean retryMethod(HttpMethod httpmethod, IOException ioexception, int i) {
       return false;
     }

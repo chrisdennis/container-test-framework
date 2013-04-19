@@ -4,19 +4,14 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.remoting.RemoteLookupFailureException;
-import org.springframework.remoting.httpinvoker.CommonsHttpInvokerRequestExecutor;
-import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
-import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
-import org.xml.sax.SAXException;
 
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.tc.test.AppServerInfo;
 import com.tc.test.JMXUtils;
 import com.tc.test.TestConfigObject;
@@ -27,14 +22,12 @@ import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.StandardAppServerParameters;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.text.Banner;
-import com.tc.util.StringUtil;
 import com.tc.util.runtime.Os;
 import com.tc.util.runtime.ThreadDump;
 import com.tc.util.runtime.Vm;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,12 +118,6 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
       parameters.appendSysProp("java.security.egd", "file:/dev/./urandom");
     }
 
-    if (TestConfigObject.getInstance().isSpringTest()) {
-      LOG.debug("Creating proxy for Spring test...");
-      proxyBuilderMap.put(RmiServiceExporter.class, new RMIProxyBuilder());
-      proxyBuilderMap.put(HttpInvokerServiceExporter.class, new HttpInvokerProxyBuilder());
-    }
-
     // pass along product key path to app server if found
     // used for EE testing
     if (USE_DEFAULT_LICENSE_KEY) {
@@ -142,10 +129,12 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     }
   }
 
+  @Override
   public StandardAppServerParameters getServerParameters() {
     return parameters;
   }
 
+  @Override
   public int getPort() {
     if (result == null) { throw new IllegalStateException("Server has not started."); }
     return result.serverPort();
@@ -189,6 +178,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   }
 
   private class RMIProxyBuilder implements ProxyBuilder {
+    @Override
     public Object createProxy(final Class serviceType, final String url, final Map initialContext) throws Exception {
       String rmiURL = "rmi://localhost:" + rmiRegistryPort + "/" + url;
       LOG.debug("Getting proxy for: " + rmiRegistryPort + " on " + result.serverPort());
@@ -209,44 +199,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     }
   }
 
-  public class HttpInvokerProxyBuilder implements ProxyBuilder {
-    private HttpClient client;
-
-    public Object createProxy(final Class serviceType, final String url, final Map initialContext) throws Exception {
-      String serviceURL = "http://localhost:" + result.serverPort() + "/" + url;
-      LOG.debug("Getting proxy for: " + serviceURL);
-      HttpInvokerProxyFactoryBean prfb = new HttpInvokerProxyFactoryBean();
-      prfb.setServiceUrl(serviceURL);
-      prfb.setServiceInterface(serviceType);
-      CommonsHttpInvokerRequestExecutor executor;
-      if (initialContext != null) {
-        client = (HttpClient) initialContext.get(ProxyBuilder.HTTP_CLIENT_KEY);
-      }
-
-      if (client == null) {
-        executor = new CommonsHttpInvokerRequestExecutor();
-        client = executor.getHttpClient();
-        if (initialContext != null) {
-          initialContext.put(ProxyBuilder.HTTP_CLIENT_KEY, client);
-        }
-      } else {
-        executor = new CommonsHttpInvokerRequestExecutor(client);
-      }
-
-      prfb.setHttpInvokerRequestExecutor(executor);
-      prfb.afterPropertiesSet();
-      return prfb.getObject();
-    }
-
-    public HttpClient getClient() {
-      return client;
-    }
-
-    public void setClient(final HttpClient client) {
-      this.client = client;
-    }
-  }
-
+  @Override
   public Object getProxy(final Class serviceType, final String url) throws Exception {
     if (this.proxyBuilder != null) { return proxyBuilder.createProxy(serviceType, url, null); }
     Map initCtx = new HashMap();
@@ -254,22 +207,26 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     return getProxy(serviceType, url, initCtx);
   }
 
+  @Override
   public Object getProxy(final Class serviceType, final String url, final Map initialContext) throws Exception {
     Class exporterClass = (Class) initialContext.get(ProxyBuilder.EXPORTER_TYPE_KEY);
     this.proxyBuilder = (ProxyBuilder) proxyBuilderMap.get(exporterClass);
     return this.proxyBuilder.createProxy(serviceType, url, initialContext);
   }
 
+  @Override
   public MBeanServerConnection getMBeanServerConnection() throws Exception {
     JMXConnector jmxConnectorProxy = JMXUtils.getJMXConnector("localhost", this.jmxRemotePort);
     return jmxConnectorProxy.getMBeanServerConnection();
   }
 
+  @Override
   public WebApplicationServer addWarDeployment(final Deployment warDeployment, final String context) {
     parameters.addDeployment(context, warDeployment);
     return this;
   }
 
+  @Override
   public WebApplicationServer addEarDeployment(final Deployment earDeployment) {
     parameters.addDeployment("", earDeployment);
     return this;
@@ -306,33 +263,19 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   /**
    * url: /<CONTEXT>/<MAPPING>?params=etc
    */
-  public WebResponse ping(final String url) throws MalformedURLException, IOException, SAXException {
-    return ping(url, new WebConversation());
-  }
-
-  /**
-   * url: /<CONTEXT>/<MAPPING>?params=etc
-   */
-  public WebResponse ping(final String url, final WebConversation wc) throws MalformedURLException, IOException,
-      SAXException {
+  @Override
+  public HtmlPage ping(final String url, final WebClient wc) throws IOException {
     String fullURL = "http://localhost:" + result.serverPort() + url;
-    LOG.debug("Getting page: " + fullURL);
-
-    wc.setExceptionsThrownOnErrorStatus(false);
-    WebResponse response = wc.getResponse(fullURL);
-    if (response.getResponseCode() != 200) { throw new RuntimeException(htmlToText(response.getText())); }
-    LOG.debug("Got page: " + fullURL);
+    HtmlPage response = wc.getPage(fullURL);
     return response;
   }
 
-  private String htmlToText(String html) {
-    String text = html.replaceAll("\\</?br/?>", StringUtil.LINE_SEPARATOR);
-    text = text.replaceAll("\\</?p/?>", StringUtil.LINE_SEPARATOR);
-    text = text.replaceAll("\\</h\\d+>", StringUtil.LINE_SEPARATOR);
-    text = text.replaceAll("\\<[^>]*>", "");
-    return text;
+  @Override
+  public HtmlPage ping(String url) throws IOException {
+    return ping(url, new WebClient());
   }
 
+  @Override
   public Server restart() throws Exception {
     stop();
     start();
@@ -344,6 +287,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     return "Generic Server" + (result != null ? "; port:" + result.serverPort() : "");
   }
 
+  @Override
   public File getWorkingDirectory() {
     return workingDir;
   }
@@ -355,6 +299,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     return server;
   }
 
+  @Override
   public File getTcConfigFile() {
     return tcConfigFile;
   }
