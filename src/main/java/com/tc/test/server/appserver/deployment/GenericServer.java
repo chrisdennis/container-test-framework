@@ -4,10 +4,6 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.remoting.RemoteLookupFailureException;
-import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -35,7 +31,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
 public class GenericServer extends AbstractStoppable implements WebApplicationServer {
-  private static final Log                  LOG                     = LogFactory.getLog(GenericServer.class);
+
   private static final String               SERVER                  = "server_";
   private static final boolean              GC_LOGGING              = true;
   private static final boolean              ENABLE_DEBUGGER         = Boolean.getBoolean(GenericServer.class.getName()
@@ -174,28 +170,6 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
       parameters.appendSysProp("aspectwerkz.transform.verbose", true);
       parameters.appendSysProp("aspectwerkz.transform.details", true);
       Banner.warnBanner("Waiting for debugger to connect on port " + debugPort);
-    }
-  }
-
-  private class RMIProxyBuilder implements ProxyBuilder {
-    @Override
-    public Object createProxy(final Class serviceType, final String url, final Map initialContext) throws Exception {
-      String rmiURL = "rmi://localhost:" + rmiRegistryPort + "/" + url;
-      LOG.debug("Getting proxy for: " + rmiRegistryPort + " on " + result.serverPort());
-      Exception e = null;
-      for (int i = 5; i > 0; i--) {
-        try {
-          RmiProxyFactoryBean prfb = new RmiProxyFactoryBean();
-          prfb.setServiceUrl(rmiURL);
-          prfb.setServiceInterface(serviceType);
-          prfb.afterPropertiesSet();
-          return prfb.getObject();
-        } catch (RemoteLookupFailureException lookupException) {
-          e = lookupException;
-        }
-        Thread.sleep(30 * 1000L);
-      }
-      throw e;
     }
   }
 
