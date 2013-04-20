@@ -9,6 +9,7 @@ import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.tomcat.Tomcat6xInstalledLocalContainer;
+import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
 
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.cargo.CargoAppServer;
@@ -42,6 +43,7 @@ public final class Tomcat6xAppServer extends CargoAppServer {
       super(config);
       this.params = params;
       config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(AppServerUtil.getPort()));
+      config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(AppServerUtil.getPort()));
     }
 
     @Override

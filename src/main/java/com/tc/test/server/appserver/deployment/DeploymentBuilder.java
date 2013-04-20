@@ -48,21 +48,9 @@ public interface DeploymentBuilder {
 
   public DeploymentBuilder addErrorPage(int status, String location);
 
-  public DeploymentBuilder addBeanDefinitionFile(String beanDefinition);
-
-  public DeploymentBuilder addRemoteService(String remoteName, String beanName, Class interfaceType);
-
-  public DeploymentBuilder addRemoteService(Class exporterType, String remoteName, String beanName, Class interfaceType);
-
-  public DeploymentBuilder addRemoteService(String beanName, Class interfaceType);
-
-  public DeploymentBuilder addRemoteServiceBlock(String serviceBlock);
-
   public DeploymentBuilder setNeededWebXml(boolean flag);
 
   public Deployment makeDeployment() throws Exception;
-
-  public void setParentApplicationContextRef(String locatorFactorySelector, String parentContextKey);
 
   public boolean isClustered();
 }

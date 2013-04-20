@@ -4,12 +4,12 @@
  */
 package com.tc.test.server.appserver.jboss6x;
 
-import org.apache.tools.ant.taskdefs.Java;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss6xInstalledLocalContainer;
 import org.codehaus.cargo.container.jboss.JBossPropertySet;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
+import org.codehaus.cargo.container.spi.jvm.JvmLauncher;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.appserver.AppServerParameters;
@@ -42,8 +42,8 @@ public final class JBoss6xAppServer extends CargoAppServer {
   @Override
   protected void setConfigProperties(LocalConfiguration config) throws Exception {
     config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(AppServerUtil.getPort()));
-    config.setProperty(JBossPropertySet.JBOSS_AJP_CONNECTOR_PORT, Integer.toString(AppServerUtil.getPort()));
-    config.setProperty(JBossPropertySet.JBOSS_HTTP_CONNECTOR_PORT, Integer.toString(AppServerUtil.getPort()));
+    config.setProperty(JBossPropertySet.JBOSS_AJP_PORT, Integer.toString(AppServerUtil.getPort()));
+    config.setProperty(JBossPropertySet.JBOSS_JMX_PORT, Integer.toString(AppServerUtil.getPort()));
     config.setProperty(JBossPropertySet.JBOSS_JRMP_PORT, Integer.toString(AppServerUtil.getPort()));
     config.setProperty(JBossPropertySet.JBOSS_NAMING_PORT, Integer.toString(AppServerUtil.getPort()));
     config.setProperty(JBossPropertySet.JBOSS_CLASSLOADING_WEBSERVICE_PORT, Integer.toString(AppServerUtil.getPort()));
@@ -72,7 +72,7 @@ public final class JBoss6xAppServer extends CargoAppServer {
     }
 
     @Override
-    protected void doStart(Java java) throws Exception {
+    protected void doStart(JvmLauncher java) throws Exception {
       JBossHelper.startupActions(new File(getConfiguration().getHome()), sars, appServerInfo, tomcatServerJars);
       super.doStart(java);
     }

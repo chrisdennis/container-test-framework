@@ -4,8 +4,6 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import org.springframework.remoting.rmi.RmiServiceExporter;
-
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.tc.test.AppServerInfo;
@@ -19,7 +17,6 @@ import com.tc.test.server.appserver.StandardAppServerParameters;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.text.Banner;
 import com.tc.util.runtime.Os;
-import com.tc.util.runtime.ThreadDump;
 import com.tc.util.runtime.Vm;
 
 import java.io.File;
@@ -46,7 +43,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   private ServerResult                      result;
   private final AppServerInstallation       installation;
   private final Map                         proxyBuilderMap         = new HashMap();
-  private ProxyBuilder                      proxyBuilder            = null;
+  private final ProxyBuilder                      proxyBuilder            = null;
   private final File                        workingDir;
   private final String                      serverInstanceName;
   private final File                        tcConfigFile;
@@ -105,9 +102,9 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     }
 
     if (!Vm.isJRockit()) {
-      parameters.appendJvmArgs("-XX:MaxPermSize=192m");
+      parameters.appendJvmArgs("-XX:MaxPermSize=256m");
     }
-    parameters.appendJvmArgs("-Xms128m -Xmx256m");
+    parameters.appendJvmArgs("-Xms128m -Xmx512m");
 
     if (Os.isUnix() && new File("/dev/urandom").exists()) {
       // prevent hangs reading from /dev/random
@@ -174,21 +171,6 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   }
 
   @Override
-  public Object getProxy(final Class serviceType, final String url) throws Exception {
-    if (this.proxyBuilder != null) { return proxyBuilder.createProxy(serviceType, url, null); }
-    Map initCtx = new HashMap();
-    initCtx.put(ProxyBuilder.EXPORTER_TYPE_KEY, RmiServiceExporter.class);
-    return getProxy(serviceType, url, initCtx);
-  }
-
-  @Override
-  public Object getProxy(final Class serviceType, final String url, final Map initialContext) throws Exception {
-    Class exporterClass = (Class) initialContext.get(ProxyBuilder.EXPORTER_TYPE_KEY);
-    this.proxyBuilder = (ProxyBuilder) proxyBuilderMap.get(exporterClass);
-    return this.proxyBuilder.createProxy(serviceType, url, initialContext);
-  }
-
-  @Override
   public MBeanServerConnection getMBeanServerConnection() throws Exception {
     JMXConnector jmxConnectorProxy = JMXUtils.getJMXConnector("localhost", this.jmxRemotePort);
     return jmxConnectorProxy.getMBeanServerConnection();
@@ -217,7 +199,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
 
   private void dumpThreadsAndRethrow(final Exception e) throws Exception {
     try {
-      ThreadDump.dumpAllJavaProcesses(3, 1000);
+      // ThreadDump.dumpAllJavaProcesses(3, 1000);
     } catch (Throwable t) {
       t.printStackTrace();
     } finally {

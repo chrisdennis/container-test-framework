@@ -21,6 +21,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.4.01</version>
+    </dependency>
+    <dependency>
       <groupId>org.terracotta</groupId>
       <artifactId>terracotta</artifactId>
       <version>${terracotta.core.version}</version>
@@ -32,9 +37,15 @@
       <version>${terracotta.core.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.terracotta</groupId>
-      <artifactId>tc-cargo-core-uberjar</artifactId>
-      <version>0.9.20130403</version>
+      <groupId>org.codehaus.cargo</groupId>
+      <artifactId>cargo-core-uberjar</artifactId>
+      <version>1.4.0</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -42,16 +53,9 @@
       <version>4.10</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring</artifactId>
-      <version>2.5.6</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>2.5.6</version>
-      <scope>provided</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -62,6 +66,12 @@
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.12</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

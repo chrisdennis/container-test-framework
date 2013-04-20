@@ -5,15 +5,11 @@
 package com.tc.test.server.appserver.weblogic12x;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.tools.ant.taskdefs.Java;
-import org.apache.tools.ant.types.Path;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.weblogic.WebLogic12xInstalledLocalContainer;
 
-import com.tc.test.AppServerInfo;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
@@ -31,6 +27,11 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
 
   public Weblogic12xAppServer(Weblogic12xAppServerInstallation installation) {
     super(installation);
+  }
+
+  @Override
+  public File serverInstallDirectory() {
+    return new File(super.serverInstallDirectory(), "wlserver");
   }
 
   @Override
@@ -56,16 +57,15 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
       this.params = params;
     }
 
-    @Override
-    public void doStop(Java java) throws Exception {
-      WeblogicAppServerBase.doStop(getConfiguration());
-    }
+    // @Override
+    // public void doStop(Java java) throws Exception {
+    // WeblogicAppServerBase.doStop(getConfiguration());
+    // }
 
     @Override
     protected void setState(State state) {
       if (state.equals(State.STARTING)) {
         adjustConfig();
-        setBeaHomeIfNeeded();
         prepareSecurityFile();
       }
     }
@@ -77,19 +77,12 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
       insert += "    <socket-reader-timeout-max-millis>1000</socket-reader-timeout-max-millis>\n";
 
       ReplaceLine.Token[] tokens = new ReplaceLine.Token[1];
-      tokens[0] = new ReplaceLine.Token(28, "    <listen-port>", insert + "    <listen-port>");
+      tokens[0] = new ReplaceLine.Token(39, "    <listen-port>", insert + "    <listen-port>");
 
       try {
         ReplaceLine.parseFile(tokens, new File(getConfiguration().getHome(), "/config/config.xml"));
       } catch (IOException ioe) {
         throw new RuntimeException(ioe);
-      }
-    }
-
-    private void setBeaHomeIfNeeded() {
-      File license = new File(getHome(), "license.bea");
-      if (license.exists()) {
-        this.setBeaHome(this.getHome());
       }
     }
 
@@ -120,18 +113,18 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
       }
     }
 
-    @Override
-    protected void addToClassPath(Path classpath) {
-      AppServerInfo appServerInfo = TestConfigObject.getInstance().appServerInfo();
-      File modulesDir = new File(this.getHome(), "modules");
-      if (appServerInfo.toString().equals("weblogic-12.1.1")) {
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "features/weblogic.server.modules_12.1.1.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.1.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "net.sf.antcontrib_1.1.0.0_1-0b2.jar"));
-      }
-      params.properties().setProperty("classpath", classpath.toString());
-    }
+    // @Override
+    // protected void addToClassPath(Path classpath) {
+    // AppServerInfo appServerInfo = TestConfigObject.getInstance().appServerInfo();
+    // File modulesDir = new File(this.getHome(), "modules");
+    // if (appServerInfo.toString().equals("weblogic-12.1.1")) {
+    // classpath.createPathElement()
+    // .setLocation(new File(modulesDir, "features/weblogic.server.modules_12.1.1.0.jar"));
+    // classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.1.jar"));
+    // classpath.createPathElement().setLocation(new File(modulesDir, "net.sf.antcontrib_1.1.0.0_1-0b2.jar"));
+    // }
+    // params.properties().setProperty("classpath", classpath.toString());
+    // }
   }
 
 }

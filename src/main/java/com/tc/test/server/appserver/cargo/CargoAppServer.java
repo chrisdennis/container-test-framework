@@ -17,7 +17,6 @@ import org.codehaus.cargo.container.property.ServletPropertySet;
 import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
-import com.tc.lcp.HeartBeatService;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -26,7 +25,6 @@ import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
 import com.tc.test.server.appserver.StandardAppServerParameters;
-import com.tc.test.server.appserver.cargo.CargoJava.Link;
 import com.tc.test.server.util.AppServerUtil;
 
 import java.io.File;
@@ -45,18 +43,11 @@ public abstract class CargoAppServer extends AbstractAppServer {
   private int                     port;
   private int                     linkedPort;
 
-  // System property used by cargo. This String is referenced in the CARGO patch, therefore it must not be changed
-  public static final String      CARGO_JAVA            = "cargo_java";
-  public static final String      CARGO_JAVA_CLASS      = CargoJava.class.getName();
-
-  static {
-    System.setProperty(CARGO_JAVA, CARGO_JAVA_CLASS);
-  }
-
   public CargoAppServer(final AppServerInstallation installation) {
     super(installation);
   }
 
+  @Override
   public final ServerResult start(final ServerParameters rawParams) throws Exception {
     StandardAppServerParameters params = (StandardAppServerParameters) rawParams;
 
@@ -83,11 +74,10 @@ public abstract class CargoAppServer extends AbstractAppServer {
     container.setHome(serverInstallDirectory().getAbsolutePath());
     container.setLogger(new ConsoleLogger(params.instanceName()));
     setExtraClasspath(params);
+    // config.setProperty(WebLogicPropertySet.BEA_HOME, container.getHome());
 
-    linkJavaProcess(instance);
-
+    container.setOutput(new File(instance.getParent(), params.instanceName() + ".log").getAbsolutePath());
     container.start();
-
     return new AppServerResult(port, this);
   }
 
@@ -95,6 +85,7 @@ public abstract class CargoAppServer extends AbstractAppServer {
     // override if desired
   }
 
+  @Override
   public void stop(final ServerParameters rawParams) {
     if (container != null) {
       if (container.getState().equals(State.STARTED) || container.getState().equals(State.STARTING)
@@ -136,16 +127,6 @@ public abstract class CargoAppServer extends AbstractAppServer {
       }
 
     }
-  }
-
-  /**
-   * Create a linked java process {@link LinkedJavaProcessPollingAgent}
-   * 
-   * @throws InterruptedException
-   */
-  private void linkJavaProcess(final File instance) throws InterruptedException {
-    linkedPort = HeartBeatService.listenPort();
-    Link.put(new CargoJava.Args(linkedPort, instance));
   }
 
   protected final InstalledLocalContainer container() {

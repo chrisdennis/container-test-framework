@@ -9,9 +9,6 @@ import org.apache.tools.ant.taskdefs.War;
 import org.apache.tools.ant.taskdefs.Zip.Duplicate;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.codehaus.cargo.util.AntUtils;
-import org.springframework.remoting.rmi.RmiRegistryFactoryBean;
-import org.springframework.web.context.ContextLoader;
-import org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping;
 
 import com.tc.logging.TCLogger;
 import com.tc.logging.TCLogging;
@@ -22,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -54,15 +50,12 @@ public class WARBuilder implements DeploymentBuilder {
   private final Set              classDirectories      = new HashSet();                        /* <FileSystemPath> */
   private final Set              libs                  = new HashSet();
   private final List             resources             = new ArrayList();
-  private final List             remoteServices        = new ArrayList();
-  private final Set              beanDefinitionFiles   = new HashSet();
   private final Map              contextParams         = new HashMap();
   private final Map              sessionConfig         = new HashMap();
   private final List             listeners             = new ArrayList();
   private final List             servlets              = new ArrayList();
   private final List             filters               = new ArrayList();
   private final Map              taglibs               = new HashMap();
-  private final StringBuffer     remoteSvcDefBlock     = new StringBuffer();
   private final FileSystemPath   tempDirPath;
   private final Map              errorPages            = new HashMap();
 
@@ -104,7 +97,6 @@ public class WARBuilder implements DeploymentBuilder {
 
     FileSystemPath warFile = makeWARFileName();
     logger.debug("Creating war file: " + warFile);
-    warFile.delete();
 
     War warTask = makeWarTask();
     warTask.setUpdate(false);
@@ -195,100 +187,6 @@ public class WARBuilder implements DeploymentBuilder {
     if (neededWebXml) {
       createWebXML(webInfDir);
     }
-    if (dispatcherServletName != null) {
-      createDispatcherServletContext(webInfDir);
-    } else if (testConfig.isSpringTest()) {
-      createRemotingContext(webInfDir);
-    }
-  }
-
-  private void createDispatcherServletContext(FileSystemPath webInfDir) throws IOException {
-    FileSystemPath springRemotingAppCtx = webInfDir.file(this.dispatcherServletName + "-servlet.xml");
-    FileOutputStream fos = new FileOutputStream(springRemotingAppCtx.getFile());
-
-    try {
-      appendFile(fos, "/dispatcherServletContextHeader.txt");
-      PrintWriter pw = new PrintWriter(fos);
-      pw.println(remoteSvcDefBlock.toString());
-
-      writeHandlerMappingBean(pw);
-
-      for (Iterator it = remoteServices.iterator(); it.hasNext();) {
-        RemoteService remoteService = (RemoteService) it.next();
-        writeRemoteService(pw, remoteService);
-      }
-      pw.flush();
-      writeFooter(fos);
-    } finally {
-      fos.close();
-    }
-  }
-
-  private void createRemotingContext(FileSystemPath webInfDir) throws IOException {
-    FileSystemPath springRemotingAppCtx = webInfDir.mkdir("classes/com/tctest/spring").file("spring-remoting.xml");
-    FileOutputStream fos = new FileOutputStream(springRemotingAppCtx.getFile());
-
-    try {
-      appendFile(fos, "/remoteContextHeader.txt");
-      PrintWriter pw = new PrintWriter(fos);
-      pw.println(remoteSvcDefBlock.toString());
-
-      writeRegistryFactoryBean(pw);
-
-      for (Iterator it = remoteServices.iterator(); it.hasNext();) {
-        RemoteService remoteService = (RemoteService) it.next();
-        writeRemoteService(pw, remoteService);
-      }
-      pw.flush();
-      writeFooter(fos);
-    } finally {
-      fos.close();
-    }
-  }
-
-  private void writeHandlerMappingBean(PrintWriter pw) {
-    pw.println("<bean id=\"defaultHandlerMapping\" class=\"" + BeanNameUrlHandlerMapping.class.getName() + "\"/>");
-  }
-
-  private void writeRegistryFactoryBean(PrintWriter pw) {
-    pw.println("<bean class=\"" + RmiRegistryFactoryBean.class.getName() + "\"  name=\"registry\" >");
-    pw.println("<property name=\"port\" value=\"${rmi.registry.port}\" />");
-    pw.println("</bean>");
-  }
-
-  private void writeRemoteService(PrintWriter pw, RemoteService remoteService) {
-    if (this.dispatcherServletName == null) {
-      pw.println("<bean class=\"" + remoteService.getExporterType().getName() + "\">");
-      printProperty(pw, "serviceName", remoteService.getRemoteName());
-      printPropertyRef(pw, "service", remoteService.getBeanName());
-      printProperty(pw, "serviceInterface", remoteService.getInterfaceType().getName());
-      printPropertyRef(pw, "registry", "registry");
-      pw.println("</bean>");
-    } else {
-      pw.println("<bean name=\"/" + remoteService.getRemoteName() + "\" class=\""
-                 + remoteService.getExporterType().getName() + "\">");
-      printPropertyRef(pw, "service", remoteService.getBeanName());
-      printProperty(pw, "serviceInterface", remoteService.getInterfaceType().getName());
-      pw.println("</bean>");
-    }
-  }
-
-  private void printProperty(PrintWriter pw, String propertyName, String propertyValue) {
-    pw.println("<property name=\"" + propertyName + "\" value=\"" + propertyValue + "\" />");
-  }
-
-  private void printPropertyRef(PrintWriter pw, String propertyName, String propertyValue) {
-    pw.println("<property name=\"" + propertyName + "\" ref=\"" + propertyValue + "\" />");
-  }
-
-  private void writeFooter(FileOutputStream fos) throws IOException {
-    appendFile(fos, "/remoteContextFooter.txt");
-  }
-
-  private void appendFile(FileOutputStream fos, String fragmentName) throws IOException {
-    InputStream is = getClass().getResourceAsStream(fragmentName);
-    IOUtils.copy(is, fos);
-    IOUtils.closeQuietly(is);
   }
 
   private void createWebXML(FileSystemPath webInfDir) throws IOException {
@@ -304,10 +202,6 @@ public class WARBuilder implements DeploymentBuilder {
                  + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                  + "xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\"\n"
                  + "version=\"2.4\">\n");
-
-      if (!beanDefinitionFiles.isEmpty()) {
-        writeContextParam(pw, ContextLoader.CONFIG_LOCATION_PARAM, generateContextConfigLocationValue());
-      }
 
       for (Iterator it = contextParams.entrySet().iterator(); it.hasNext();) {
         Map.Entry param = (Map.Entry) it.next();
@@ -335,12 +229,6 @@ public class WARBuilder implements DeploymentBuilder {
         pw.println("  </filter-mapping>");
       }
 
-      if (!beanDefinitionFiles.isEmpty()) {
-        writeListener(pw, org.springframework.web.context.ContextLoaderListener.class.getName());
-        if (this.dispatcherServletName == null) {
-          writeListener(pw, com.tc.test.server.appserver.deployment.RemoteContextListener.class.getName());
-        }
-      }
       for (Iterator it = listeners.iterator(); it.hasNext();) {
         writeListener(pw, ((Class) it.next()).getName());
       }
@@ -460,73 +348,6 @@ public class WARBuilder implements DeploymentBuilder {
     }
 
     pw.println("  </filter>");
-  }
-
-  private String generateContextConfigLocationValue() {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    for (Iterator it = beanDefinitionFiles.iterator(); it.hasNext();) {
-      String beanDefinitionFile = (String) it.next();
-      pw.println(beanDefinitionFile);
-    }
-    pw.flush();
-    return sw.toString();
-  }
-
-  @Override
-  public DeploymentBuilder addBeanDefinitionFile(String beanDefinition) {
-    beanDefinitionFiles.add(beanDefinition);
-    return this;
-  }
-
-  @Override
-  public DeploymentBuilder addRemoteService(String remoteName, String beanName, Class interfaceType) {
-    remoteServices.add(new RemoteService(remoteName, beanName, interfaceType));
-    return this;
-  }
-
-  @Override
-  public DeploymentBuilder addRemoteService(Class exporterType, String remoteName, String beanName, Class interfaceType) {
-    remoteServices.add(new RemoteService(exporterType, remoteName, beanName, interfaceType));
-    return this;
-  }
-
-  @Override
-  public DeploymentBuilder addRemoteService(String beanName, Class interfaceType) {
-    addRemoteService(capitalise(beanName), beanName, interfaceType);
-    return this;
-  }
-
-  private static String capitalise(String s) {
-    if (s == null) { return null; }
-    int size = s.length();
-    StringBuffer buffer = new StringBuffer(size);
-    boolean space = true;
-    for (int i = 0; i < size; i++) {
-      char c = s.charAt(i);
-      if (Character.isWhitespace(c)) {
-        buffer.append(c);
-        space = true;
-      } else if (space) {
-        buffer.append(Character.toTitleCase(c));
-        space = false;
-      } else {
-        buffer.append(c);
-      }
-    }
-    return buffer.toString();
-  }
-
-  @Override
-  public DeploymentBuilder addRemoteServiceBlock(String block) {
-    remoteSvcDefBlock.append(block + "\n");
-    return this;
-  }
-
-  @Override
-  public void setParentApplicationContextRef(String locatorFactorySelector, String parentContextKey) {
-    this.contextParams.put(ContextLoader.LOCATOR_FACTORY_SELECTOR_PARAM, locatorFactorySelector);
-    this.contextParams.put(ContextLoader.LOCATOR_FACTORY_KEY_PARAM, parentContextKey);
   }
 
   @Override

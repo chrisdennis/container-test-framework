@@ -48,7 +48,7 @@ public abstract class AbstractAppServer implements AppServer {
    * The specific appserver implementation uses the server install directory to locate the immutable appserver
    * installation files used to start running instances in the working directory.
    */
-  protected final File serverInstallDirectory() {
+  public File serverInstallDirectory() {
     if (!installation.isRepoInstall()) return installation.serverInstallDirectory();
     return new File(installation.serverInstallDirectory() + File.separator + installation.appServerInfo().toString());
 

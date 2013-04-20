@@ -5,15 +5,11 @@
 package com.tc.test.server.appserver.weblogic10x;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.tools.ant.taskdefs.Java;
-import org.apache.tools.ant.types.Path;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.weblogic.WebLogic10xInstalledLocalContainer;
 
-import com.tc.test.AppServerInfo;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
@@ -34,6 +30,11 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
   }
 
   @Override
+  public File serverInstallDirectory() {
+    return new File(super.serverInstallDirectory(), "wlserver");
+  }
+
+  @Override
   protected String cargoServerKey() {
     return "weblogic10x";
   }
@@ -45,7 +46,7 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
 
   @Override
   protected void setConfigProperties(LocalConfiguration config) throws Exception {
-    // config.setProperty(WebLogicPropertySet.DOMAIN, "domain");
+    //
   }
 
   private static class TCWebLogic10xInstalledLocalContainer extends WebLogic10xInstalledLocalContainer {
@@ -57,15 +58,9 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
     }
 
     @Override
-    public void doStop(Java java) throws Exception {
-      WeblogicAppServerBase.doStop(getConfiguration());
-    }
-
-    @Override
     protected void setState(State state) {
       if (state.equals(State.STARTING)) {
         adjustConfig();
-        setBeaHomeIfNeeded();
         prepareSecurityFile();
       }
     }
@@ -83,13 +78,6 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
         ReplaceLine.parseFile(tokens, new File(getConfiguration().getHome(), "/config/config.xml"));
       } catch (IOException ioe) {
         throw new RuntimeException(ioe);
-      }
-    }
-
-    private void setBeaHomeIfNeeded() {
-      File license = new File(getHome(), "license.bea");
-      if (license.exists()) {
-        this.setBeaHome(this.getHome());
       }
     }
 
@@ -121,37 +109,8 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
     }
 
     @Override
-    protected void addToClassPath(Path classpath) {
-      AppServerInfo appServerInfo = TestConfigObject.getInstance().appServerInfo();
-      File modulesDir = new File(this.getHome(), "modules");
-      if (appServerInfo.toString().equals("weblogic-10.0.mp1")) {
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.0.1.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir,
-                                                           "features/com.bea.cie.common-plugin.launch_2.1.2.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.6.5/lib/ant-all.jar"));
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "net.sf.antcontrib_1.0b2.0/lib/ant-contrib.jar"));
-      } else if (appServerInfo.toString().equals("weblogic-10.3.0")) {
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.0.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.6.5/lib/ant-all.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir,
-                                                           "net.sf.antcontrib_1.0.0.0_1-0b2/lib/ant-contrib.jar"));
-      } else if (appServerInfo.toString().equals("weblogic-10.3.1")) {
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.1.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.0/lib/ant-all.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir,
-                                                           "net.sf.antcontrib_1.0.0.0_1-0b2/lib/ant-contrib.jar"));
-      } else if (appServerInfo.toString().equals("weblogic-10.3.6")) {
-        classpath.createPathElement()
-            .setLocation(new File(modulesDir, "features/weblogic.server.modules_10.3.6.0.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.1.jar"));
-        classpath.createPathElement().setLocation(new File(modulesDir, "net.sf.antcontrib_1.1.0.0_1-0b2.jar"));
-      }
-      params.properties().setProperty("classpath", classpath.toString());
+    public void addExtraClasspath(String location) {
+      super.addExtraClasspath(location);
     }
   }
-
 }

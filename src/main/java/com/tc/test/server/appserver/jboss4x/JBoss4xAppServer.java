@@ -4,11 +4,12 @@
  */
 package com.tc.test.server.appserver.jboss4x;
 
-import org.apache.tools.ant.taskdefs.Java;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss4xInstalledLocalContainer;
+import org.codehaus.cargo.container.jboss.JBossPropertySet;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
+import org.codehaus.cargo.container.spi.jvm.JvmLauncher;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.appserver.AppServerParameters;
@@ -41,6 +42,7 @@ public final class JBoss4xAppServer extends CargoAppServer {
   @Override
   protected void setConfigProperties(LocalConfiguration config) throws Exception {
     config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(AppServerUtil.getPort()));
+    config.setProperty(JBossPropertySet.JBOSS_AJP_PORT, Integer.toString(AppServerUtil.getPort()));
   }
 
   private static class TCJBoss4xInstalledLocalContainer extends JBoss4xInstalledLocalContainer {
@@ -57,7 +59,7 @@ public final class JBoss4xAppServer extends CargoAppServer {
     }
 
     @Override
-    protected void doStart(Java java) throws Exception {
+    protected void doStart(JvmLauncher java) throws Exception {
       JBossHelper.startupActions(new File(getConfiguration().getHome()), sars, appServerInfo, tomcatServerJars);
       super.doStart(java);
     }

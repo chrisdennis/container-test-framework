@@ -25,7 +25,6 @@ import com.tc.test.server.appserver.tomcat6x.Tomcat6xAppServerFactory;
 import com.tc.test.server.appserver.tomcat7x.Tomcat7xAppServerFactory;
 import com.tc.test.server.appserver.was7x.Was7xAppServerFactory;
 import com.tc.test.server.appserver.was8x.Was8xAppServerFactory;
-import com.tc.test.server.appserver.wasce1x.Wasce1xAppServerFactory;
 import com.tc.test.server.appserver.weblogic10x.Weblogic10xAppServerFactory;
 import com.tc.test.server.appserver.weblogic12x.Weblogic12xAppServerFactory;
 
@@ -66,9 +65,6 @@ public abstract class AppServerFactory {
       case AppServerInfo.WEBLOGIC:
         if ("10".equals(majorVersion)) return new Weblogic10xAppServerFactory();
         if ("12".equals(majorVersion)) return new Weblogic12xAppServerFactory();
-        break;
-      case AppServerInfo.WASCE:
-        if ("1".equals(majorVersion)) return new Wasce1xAppServerFactory();
         break;
       case AppServerInfo.JBOSS:
         if ("3".equals(majorVersion)) return new JBoss3xAppServerFactory();

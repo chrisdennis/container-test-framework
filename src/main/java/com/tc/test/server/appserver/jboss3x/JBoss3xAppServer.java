@@ -4,11 +4,11 @@
  */
 package com.tc.test.server.appserver.jboss3x;
 
-import org.apache.tools.ant.taskdefs.Java;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss3xInstalledLocalContainer;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
+import org.codehaus.cargo.container.spi.jvm.JvmLauncher;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.appserver.AppServerParameters;
@@ -58,11 +58,10 @@ public final class JBoss3xAppServer extends CargoAppServer {
     }
 
     @Override
-    protected void doStart(Java java) throws Exception {
+    protected void doStart(JvmLauncher arg0) throws Exception {
       JBossHelper.startupActions(new File(getConfiguration().getHome()), sars, appServerInfo, tomcatServerJars);
-      super.doStart(java);
+      super.doStart(arg0);
     }
-
   }
 
 }
