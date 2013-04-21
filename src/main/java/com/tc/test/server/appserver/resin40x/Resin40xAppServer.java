@@ -11,7 +11,6 @@ import org.apache.tools.ant.taskdefs.Replace;
 
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -111,8 +110,6 @@ public final class Resin40xAppServer extends AbstractAppServer {
 
     List cmd = new ArrayList();
     cmd.add(0, JAVA_CMD);
-    cmd.add("-cp");
-    cmd.add(TestConfigObject.getInstance().extraClassPathForAppServer());
     cmd.add("-jar");
     cmd.add(this.serverInstallDirectory() + File.separator + "lib" + File.separator + "resin.jar");
     cmd.add("start");

@@ -11,7 +11,6 @@ import org.apache.tools.ant.taskdefs.Replace;
 
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -58,6 +57,7 @@ public final class Resin31xAppServer extends AbstractAppServer {
     super(installation);
   }
 
+  @Override
   public ServerResult start(final ServerParameters parameters) throws Exception {
     AppServerParameters params = (AppServerParameters) parameters;
     for (int i = 0; i < STARTUP_RETRIES; i++) {
@@ -81,6 +81,7 @@ public final class Resin31xAppServer extends AbstractAppServer {
     throw new RuntimeException("Failed to start server in " + STARTUP_RETRIES + " attempts");
   }
 
+  @Override
   public void stop(final ServerParameters rawParams) throws Exception {
     final String[] cmd = new String[] { JAVA_CMD, "-jar",
         this.serverInstallDirectory() + File.separator + "lib" + File.separator + "resin.jar", "stop", "-conf",
@@ -108,8 +109,6 @@ public final class Resin31xAppServer extends AbstractAppServer {
 
     List cmd = new ArrayList();
     cmd.add(0, JAVA_CMD);
-    cmd.add("-cp");
-    cmd.add(TestConfigObject.getInstance().extraClassPathForAppServer());
     cmd.add("-jar");
     cmd.add(this.serverInstallDirectory() + File.separator + "lib" + File.separator + "resin.jar");
     cmd.add("start");

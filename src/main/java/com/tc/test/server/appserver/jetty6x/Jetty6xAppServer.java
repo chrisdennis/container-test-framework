@@ -6,7 +6,6 @@ import com.tc.lcp.CargoLinkedChildProcess;
 import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -53,11 +52,13 @@ public class Jetty6xAppServer extends AbstractAppServer {
     super(installation);
   }
 
+  @Override
   public ServerResult start(final ServerParameters parameters) throws Exception {
     AppServerParameters params = (AppServerParameters) parameters;
     return startJetty(params);
   }
 
+  @Override
   public void stop(final ServerParameters rawParams) throws Exception {
     final String[] cmd = new String[] { JAVA_CMD, "-DSTOP.PORT=" + stop_port, "-DSTOP.KEY=" + STOP_KEY, "-jar",
         "start.jar", "--stop" };
@@ -86,8 +87,7 @@ public class Jetty6xAppServer extends AbstractAppServer {
     List cmd = new ArrayList(Arrays.asList(jvmargs));
     cmd.add(0, JAVA_CMD);
     cmd.add("-cp");
-    cmd.add(this.serverInstallDirectory() + File.separator + "start.jar" + File.pathSeparator
-            + TestConfigObject.getInstance().extraClassPathForAppServer());
+    cmd.add(this.serverInstallDirectory() + File.separator + "start.jar");
 
     cmd.add("-Djetty.home=" + this.serverInstallDirectory());
     cmd.add("-Djetty.port=" + jetty_port);

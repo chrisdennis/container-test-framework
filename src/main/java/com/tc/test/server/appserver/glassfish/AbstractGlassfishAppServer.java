@@ -18,7 +18,6 @@ import com.tc.lcp.CargoLinkedChildProcess;
 import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
-import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -475,11 +474,6 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
         // the classpath is set with java.class.path system property, check
         // these just for good measure
         throw new RuntimeException("unexpected classpath arguments in startup command " + cmd);
-      }
-
-      if (s.startsWith("-Djava.class.path=")) {
-        cmd.set(i, s + File.pathSeparator + TestConfigObject.getInstance().extraClassPathForAppServer());
-        break;
       }
     }
 
