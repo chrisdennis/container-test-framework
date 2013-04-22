@@ -2,7 +2,6 @@ package com.tc.test.server.appserver.jetty6x;
 
 import org.apache.commons.io.IOUtils;
 
-import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -93,8 +92,6 @@ public class Jetty6xAppServer extends AbstractAppServer {
     cmd.add("-DSTOP.KEY=" + STOP_KEY);
     cmd.add("-Djava.io.tmpdir=" + workDir.getAbsolutePath());
     cmd.add(JETTY_MAIN_CLASS);
-    cmd.add(String.valueOf(HeartBeatService.listenPort()));
-    cmd.add(instanceDir.getAbsolutePath());
     cmd.add(configFile);
 
     final String[] cmdArray = (String[]) cmd.toArray(new String[] {});
