@@ -14,8 +14,6 @@ import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.tc.lcp.CargoLinkedChildProcess;
-import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -484,10 +482,7 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
                                                                                               + mainClass); }
     if (!"start".equals(mainArg)) { throw new RuntimeException("unexpected main argument: " + mainArg); }
 
-    cmd.add(CargoLinkedChildProcess.class.getName());
     cmd.add(mainClass);
-    cmd.add(String.valueOf(HeartBeatService.listenPort()));
-    cmd.add(instanceDir.toString());
     cmd.add(mainArg);
 
     cmd.add(0, JAVA_CMD);

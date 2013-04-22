@@ -2,8 +2,6 @@ package com.tc.test.server.appserver.jetty7x;
 
 import org.apache.commons.io.IOUtils;
 
-import com.tc.lcp.CargoLinkedChildProcess;
-import com.tc.lcp.HeartBeatService;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -102,10 +100,7 @@ public class Jetty7xAppServer extends AbstractAppServer {
     cmd.add("-Djetty.home=" + this.serverInstallDirectory());
     cmd.add("-Djetty.port=" + jetty_port);
     cmd.add("-Djava.io.tmpdir=" + workDir.getAbsolutePath());
-    cmd.add(CargoLinkedChildProcess.class.getName());
     cmd.add(JETTY_MAIN_CLASS);
-    cmd.add(String.valueOf(HeartBeatService.listenPort()));
-    cmd.add(instanceDir.getAbsolutePath());
     cmd.add("STOP.PORT=" + stop_port);
     cmd.add("STOP.KEY=" + STOP_KEY);
     // cmd.add("DEBUG=true");
