@@ -13,7 +13,6 @@ import org.codehaus.cargo.container.weblogic.WebLogic12xInstalledLocalContainer;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
-import com.tc.util.runtime.Os;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,7 +65,6 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
     protected void setState(State state) {
       if (state.equals(State.STARTING)) {
         adjustConfig();
-        prepareSecurityFile();
       }
     }
 
@@ -83,21 +81,6 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
         ReplaceLine.parseFile(tokens, new File(getConfiguration().getHome(), "/config/config.xml"));
       } catch (IOException ioe) {
         throw new RuntimeException(ioe);
-      }
-    }
-
-    private void prepareSecurityFile() {
-      if (Os.isLinux() || Os.isSolaris()) {
-        try {
-          String[] resources = new String[] { "security/SerializedSystemIni.dat" };
-          for (String resource2 : resources) {
-            String resource = "linux/" + resource2;
-            File dest = new File(getConfiguration().getHome(), resource2);
-            copyResource(resource, dest);
-          }
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
       }
     }
 
