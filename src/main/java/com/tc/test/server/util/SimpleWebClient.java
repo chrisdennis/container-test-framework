@@ -23,7 +23,7 @@ import java.util.Map;
  *
  * @author hhuynh
  */
-public class WebClient {
+public class SimpleWebClient {
   private Map          cookies = new HashMap();
 
   public String getResponseAsString(URL url) throws IOException {
