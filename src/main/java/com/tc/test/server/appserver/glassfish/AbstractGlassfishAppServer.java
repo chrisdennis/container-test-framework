@@ -13,7 +13,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -277,11 +277,11 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     int tries = 10;
     for (int i = 0; i < tries; i++) {
-      HtmlPage response;
+      WebResponse response;
       try {
         System.err.println("Pinging " + pingUrl + " - try #" + i);
         response = wc.getPage(pingUrl);
-        if (response.getWebResponse().getStatusCode() == 200) return;
+        if (response.getStatusCode() == 200) return;
       } catch (Exception e) {
         // ignored
       }
