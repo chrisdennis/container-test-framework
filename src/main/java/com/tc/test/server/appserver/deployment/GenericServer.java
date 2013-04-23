@@ -5,7 +5,7 @@
 package com.tc.test.server.appserver.deployment;
 
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.tc.test.AppServerInfo;
 import com.tc.test.JMXUtils;
 import com.tc.test.TestConfigObject;
@@ -43,7 +43,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   private ServerResult                      result;
   private final AppServerInstallation       installation;
   private final Map                         proxyBuilderMap         = new HashMap();
-  private final ProxyBuilder                      proxyBuilder            = null;
+  private final ProxyBuilder                proxyBuilder            = null;
   private final File                        workingDir;
   private final String                      serverInstanceName;
   private final File                        tcConfigFile;
@@ -220,14 +220,14 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
    * url: /<CONTEXT>/<MAPPING>?params=etc
    */
   @Override
-  public HtmlPage ping(final String url, final WebClient wc) throws IOException {
+  public WebResponse ping(final String url, final WebClient wc) throws IOException {
+    wc.getOptions().setTimeout(180000);
     String fullURL = "http://localhost:" + result.serverPort() + url;
-    HtmlPage response = wc.getPage(fullURL);
-    return response;
+    return wc.getPage(fullURL).getWebResponse();
   }
 
   @Override
-  public HtmlPage ping(String url) throws IOException {
+  public WebResponse ping(String url) throws IOException {
     return ping(url, new WebClient());
   }
 

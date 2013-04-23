@@ -5,7 +5,7 @@
 package com.tc.test.server.appserver.deployment;
 
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.tc.test.server.appserver.StandardAppServerParameters;
 
 import java.io.File;
@@ -19,9 +19,9 @@ public interface WebApplicationServer extends Server {
 
   public WebApplicationServer addEarDeployment(Deployment earDeployment);
 
-  public HtmlPage ping(String url) throws IOException;
+  public WebResponse ping(String url) throws IOException;
 
-  public HtmlPage ping(String url, WebClient wc) throws IOException;
+  public WebResponse ping(String url, WebClient wc) throws IOException;
 
   public int getPort();
 

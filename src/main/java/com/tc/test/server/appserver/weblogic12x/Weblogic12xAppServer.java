@@ -4,7 +4,6 @@
  */
 package com.tc.test.server.appserver.weblogic12x;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
@@ -15,9 +14,7 @@ import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Weblogic10x AppServer implementation
@@ -56,11 +53,6 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
       this.params = params;
     }
 
-    // @Override
-    // public void doStop(Java java) throws Exception {
-    // WeblogicAppServerBase.doStop(getConfiguration());
-    // }
-
     @Override
     protected void setState(State state) {
       if (state.equals(State.STARTING)) {
@@ -83,31 +75,6 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
         throw new RuntimeException(ioe);
       }
     }
-
-    private void copyResource(String name, File dest) throws IOException {
-      dest.getParentFile().mkdirs();
-      InputStream in = getClass().getResourceAsStream(name);
-      FileOutputStream out = new FileOutputStream(dest);
-      try {
-        IOUtils.copy(in, out);
-      } finally {
-        IOUtils.closeQuietly(in);
-        IOUtils.closeQuietly(out);
-      }
-    }
-
-    // @Override
-    // protected void addToClassPath(Path classpath) {
-    // AppServerInfo appServerInfo = TestConfigObject.getInstance().appServerInfo();
-    // File modulesDir = new File(this.getHome(), "modules");
-    // if (appServerInfo.toString().equals("weblogic-12.1.1")) {
-    // classpath.createPathElement()
-    // .setLocation(new File(modulesDir, "features/weblogic.server.modules_12.1.1.0.jar"));
-    // classpath.createPathElement().setLocation(new File(modulesDir, "org.apache.ant_1.7.1.jar"));
-    // classpath.createPathElement().setLocation(new File(modulesDir, "net.sf.antcontrib_1.1.0.0_1-0b2.jar"));
-    // }
-    // params.properties().setProperty("classpath", classpath.toString());
-    // }
   }
 
 }

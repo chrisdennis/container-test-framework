@@ -4,7 +4,6 @@
  */
 package com.tc.test.server.appserver.weblogic10x;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
@@ -15,9 +14,7 @@ import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Weblogic10x AppServer implementation
@@ -35,7 +32,7 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
 
   @Override
   protected String cargoServerKey() {
-    return "weblogic10x";
+    return "weblogic103x";
   }
 
   @Override
@@ -76,18 +73,6 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
         ReplaceLine.parseFile(tokens, new File(getConfiguration().getHome(), "/config/config.xml"));
       } catch (IOException ioe) {
         throw new RuntimeException(ioe);
-      }
-    }
-
-    private void copyResource(String name, File dest) throws IOException {
-      dest.getParentFile().mkdirs();
-      InputStream in = getClass().getResourceAsStream(name);
-      FileOutputStream out = new FileOutputStream(dest);
-      try {
-        IOUtils.copy(in, out);
-      } finally {
-        IOUtils.closeQuietly(in);
-        IOUtils.closeQuietly(out);
       }
     }
 

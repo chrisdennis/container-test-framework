@@ -41,14 +41,13 @@ public abstract class CargoAppServer extends AbstractAppServer {
   private static final int        DEFAULT_START_TIMEOUT = 8 * 60 * 1000;
   private InstalledLocalContainer container;
   private int                     port;
-  private int                     linkedPort;
 
   public CargoAppServer(final AppServerInstallation installation) {
     super(installation);
   }
 
   @Override
-  public final ServerResult start(final ServerParameters rawParams) throws Exception {
+  public ServerResult start(final ServerParameters rawParams) throws Exception {
     StandardAppServerParameters params = (StandardAppServerParameters) rawParams;
 
     adjustParams(params);
