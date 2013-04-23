@@ -41,7 +41,7 @@ public abstract class WeblogicAppServerBase extends CargoAppServer {
     String port = configuration.getPropertyValue("cargo.servlet.port");
     WebClient wc = new WebClient();
     String fullURL = "http://localhost:" + port + "/WLS_SHUTDOWN_HACK/Go";
-    WebResponse response = wc.getPage(fullURL);
+    WebResponse response = wc.getPage(fullURL).getWebResponse();
     Assert.assertEquals("Server error:\n" + response.getContentAsString(), 200, response.getStatusCode());
     Assert.assertEquals("Server error:\n" + response.getContentAsString(), 0, response.getContentAsString()
         .length());

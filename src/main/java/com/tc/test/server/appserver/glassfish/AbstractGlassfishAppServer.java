@@ -280,7 +280,7 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
       WebResponse response;
       try {
         System.err.println("Pinging " + pingUrl + " - try #" + i);
-        response = wc.getPage(pingUrl);
+        response = wc.getPage(pingUrl).getWebResponse();
         if (response.getStatusCode() == 200) return;
       } catch (Exception e) {
         // ignored
