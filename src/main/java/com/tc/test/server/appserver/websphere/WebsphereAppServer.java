@@ -65,8 +65,10 @@ public class WebsphereAppServer extends AbstractAppServer {
     super(installation);
   }
 
+  @Override
   public ServerResult start(ServerParameters parameters) throws Exception {
     init(parameters);
+    cleanupStrayLocks();
     createPortFile();
     copyPythonScripts();
     patchTerracottaPy();
@@ -96,6 +98,7 @@ public class WebsphereAppServer extends AbstractAppServer {
     return new AppServerResult(webspherePort, this);
   }
 
+  @Override
   public void stop(ServerParameters parameters) throws Exception {
     try {
       stopWebsphere();
@@ -114,6 +117,13 @@ public class WebsphereAppServer extends AbstractAppServer {
       } catch (Exception e) {
         e.printStackTrace();
       }
+    }
+  }
+
+  private void cleanupStrayLocks() throws IOException {
+    File lock1 = new File(serverInstallDir, "properties/profileRegistry.xml_LOCK");
+    if (lock1.exists()) {
+      FileUtils.forceDelete(lock1);
     }
   }
 
