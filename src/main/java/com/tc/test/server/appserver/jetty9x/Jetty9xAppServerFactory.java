@@ -2,7 +2,7 @@
  * All content copyright (c) 2003-2008 Terracotta, Inc., except as may otherwise be noted in a separate copyright
  * notice. All rights reserved.
  */
-package com.tc.test.server.appserver.jetty7x;
+package com.tc.test.server.appserver.jetty9x;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.appserver.AppServer;
@@ -18,7 +18,7 @@ import java.util.Properties;
  * This class creates specific implementations of return values for the given methods. To obtain an instance you must
  * call {@link NewAppServerFactory.createFactoryFromProperties()}.
  */
-public final class Jetty7xAppServerFactory extends AppServerFactory {
+public final class Jetty9xAppServerFactory extends AppServerFactory {
 
   @Override
   public AppServerParameters createParameters(String instanceName, Properties props) {
@@ -27,12 +27,12 @@ public final class Jetty7xAppServerFactory extends AppServerFactory {
 
   @Override
   public AppServer createAppServer(AppServerInstallation installation) {
-    return new Jetty7xAppServer(installation);
+    return new Jetty9xAppServer(installation);
   }
 
   @Override
   public AppServerInstallation createInstallation(File home, File workingDir, AppServerInfo appServerInfo)
       throws Exception {
-    return new Jetty7xAppServerInstallation(home, workingDir, appServerInfo);
+    return new Jetty9xAppServerInstallation(home, workingDir, appServerInfo);
   }
 }

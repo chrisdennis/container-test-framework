@@ -7,6 +7,7 @@ import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
+import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
 import com.tc.test.server.util.AppServerUtil;
@@ -44,7 +45,7 @@ public class Jetty7xAppServer extends AbstractAppServer {
   private int                  stop_port          = 0;
   private Thread               runner             = null;
 
-  public Jetty7xAppServer(final Jetty7xAppServerInstallation installation) {
+  public Jetty7xAppServer(final AppServerInstallation installation) {
     super(installation);
   }
 
@@ -97,14 +98,12 @@ public class Jetty7xAppServer extends AbstractAppServer {
     cmd.add(0, JAVA_CMD);
     cmd.add("-cp");
     cmd.add(this.serverInstallDirectory() + File.separator + "start.jar");
+    cmd.add("-DSTOP.PORT=" + stop_port);
+    cmd.add("-DSTOP.KEY=" + STOP_KEY);
     cmd.add("-Djetty.home=" + this.serverInstallDirectory());
     cmd.add("-Djetty.port=" + jetty_port);
     cmd.add("-Djava.io.tmpdir=" + workDir.getAbsolutePath());
     cmd.add(JETTY_MAIN_CLASS);
-    cmd.add("STOP.PORT=" + stop_port);
-    cmd.add("STOP.KEY=" + STOP_KEY);
-    // cmd.add("DEBUG=true");
-    cmd.add("OPTIONS=All");
     cmd.add(jettyConfigFile);
 
     final String[] cmdArray = (String[]) cmd.toArray(new String[] {});
@@ -226,7 +225,7 @@ public class Jetty7xAppServer extends AbstractAppServer {
   private String getJettyXml() throws IOException {
     InputStream in = null;
     try {
-      in = Jetty7xAppServer.class.getResourceAsStream("jetty.xml");
+      in = getClass().getResourceAsStream("jetty.xml");
       List<String> lines = IOUtils.readLines(in);
       StringBuilder content = new StringBuilder();
       for (String line : lines) {
