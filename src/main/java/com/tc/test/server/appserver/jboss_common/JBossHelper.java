@@ -27,7 +27,7 @@ public class JBossHelper {
                                     Collection<String> tomcatServerJars) throws IOException {
     if ((appServerInfo.getMajor().equals("5") && appServerInfo.getMinor().startsWith("1"))) {
       writePortsConfigJBoss51x(new PortChooser(), serverDir, appServerInfo);
-    } else if (appServerInfo.getMajor().equals("6") && appServerInfo.getMinor().startsWith("0")) {
+    } else if (appServerInfo.getMajor().equals("6")) {
       writePortsConfigJBoss6x(new PortChooser(), serverDir, appServerInfo);
     } else {
       writePortsConfig(new PortChooser(), new File(serverDir, "conf/cargo-binding.xml"), appServerInfo);
