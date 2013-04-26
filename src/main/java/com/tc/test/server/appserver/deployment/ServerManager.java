@@ -4,7 +4,6 @@
  */
 package com.tc.test.server.appserver.deployment;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.terracotta.test.util.TestBaseUtil;
 
@@ -14,9 +13,7 @@ import com.tc.test.AppServerInfo;
 import com.tc.test.TestConfigObject;
 import com.tc.test.server.appserver.AppServerFactory;
 import com.tc.test.server.appserver.AppServerInstallation;
-import com.tc.test.server.appserver.StandardAppServerParameters;
 import com.tc.test.server.util.AppServerUtil;
-import com.tc.test.server.util.Util;
 import com.tc.util.PortChooser;
 import com.tc.util.TcConfigBuilder;
 import com.tc.util.runtime.Os;
@@ -190,9 +187,6 @@ public class ServerManager {
     WebApplicationServer appServer = new GenericServer(config, factory, installation,
                                                        prepareClientTcConfig(tcConfigBuilder).getTcConfigFile(), i,
                                                        tempDir);
-    if (clustered) {
-      addExpressModeParams(appServer.getServerParameters());
-    }
     addServerToStop(appServer);
     return appServer;
   }
@@ -200,7 +194,6 @@ public class ServerManager {
   public WebApplicationServer makeWebApplicationServerNoDso() throws Exception {
     int i = ServerManager.appServerIndex++;
     WebApplicationServer appServer = new GenericServer(config, factory, installation, null, i, tempDir);
-    addExpressModeParams(appServer.getServerParameters());
     addServerToStop(appServer);
     return appServer;
 
@@ -313,35 +306,6 @@ public class ServerManager {
     return attrs;
   }
 
-  private void addExpressModeParams(StandardAppServerParameters params) {
-    setupExpressJarContaining(params, TOOLKIT_RUNTIME_LOAD_CLASS);
-
-    if (isSessionTest) {
-      setupExpressJarContaining(params, SESSIONS_LOAD_CLASS);
-    }
-  }
-
-  private void setupExpressJarContaining(StandardAppServerParameters params, String className) {
-    File expressJar;
-    try {
-      expressJar = new File(Util.jarFor(Class.forName(className)));
-    } catch (ClassNotFoundException e1) {
-      throw new RuntimeException("Couldn't load class " + className + " to look up the jar file", e1);
-    }
-    File sandBoxArtifact = new File(this.tempDir, expressJar.getName());
-
-    if (!sandBoxArtifact.exists()) {
-      // copy the express jar into the test temp dir since that likely won't have any spaces in it
-      try {
-        FileUtils.copyFile(expressJar, sandBoxArtifact);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    params.addTomcatServerJar(sandBoxArtifact.getAbsolutePath());
-  }
-
   private void addExpressModeWarConfig(DeploymentBuilder builder) {
     if (isSessionTest) {
       if (useFilter()) {
@@ -362,16 +326,6 @@ public class ServerManager {
           throw new RuntimeException(e);
         }
         builder.addFilter("terracotta-filter", "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
-      }
-
-      // not using filter, but jboss7 still needs the express jars
-      if (isJboss7x()) {
-        try {
-          builder.addDirectoryOrJARContainingClass(Class.forName(SESSIONS_LOAD_CLASS));
-          builder.addDirectoryOrJARContainingClass(Class.forName(TOOLKIT_RUNTIME_LOAD_CLASS));
-        } catch (ClassNotFoundException e1) {
-          throw new RuntimeException(e1);
-        }
       }
     }
   }
