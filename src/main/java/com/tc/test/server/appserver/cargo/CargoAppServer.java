@@ -62,12 +62,12 @@ public abstract class CargoAppServer extends AbstractAppServer {
                                                                                  ConfigurationType.STANDALONE,
                                                                                  instance.getAbsolutePath());
     setConfigProperties(config);
-    config.setProperty(ServletPropertySet.PORT, Integer.toString(port));
-    config.setProperty(GeneralPropertySet.JVMARGS, params.jvmArgs());
-    config.setProperty(GeneralPropertySet.LOGGING, "low");
     addDeployables(config, params.deployables(), params.instanceName());
 
     container = container(config, params);
+    config.setProperty(ServletPropertySet.PORT, Integer.toString(port));
+    config.setProperty(GeneralPropertySet.JVMARGS, params.jvmArgs());
+    config.setProperty(GeneralPropertySet.LOGGING, "low");
     container.setTimeout(Integer.valueOf(params.properties().getProperty(StandardAppServerParameters.START_TIMEOUT,
                                                                          DEFAULT_START_TIMEOUT + "")));
     container.setHome(serverInstallDirectory().getAbsolutePath());

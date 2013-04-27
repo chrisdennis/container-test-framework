@@ -10,6 +10,7 @@ import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.weblogic.WebLogic12xInstalledLocalContainer;
 
 import com.tc.test.server.appserver.AppServerParameters;
+import com.tc.test.server.appserver.StandardAppServerParameters;
 import com.tc.test.server.appserver.weblogic.WeblogicAppServerBase;
 import com.tc.util.ReplaceLine;
 
@@ -37,6 +38,10 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
 
   @Override
   protected InstalledLocalContainer container(LocalConfiguration config, AppServerParameters params) {
+    ((StandardAppServerParameters) params).appendSysProp("-Djava.endorsed.dirs="
+                                                         + System.getProperty("java.endorsed.dirs")
+                                                         + File.pathSeparator + this.serverInstallDirectory()
+                                                         + "/endorsed");
     return new TCWebLogic12xInstalledLocalContainer(config, params);
   }
 
