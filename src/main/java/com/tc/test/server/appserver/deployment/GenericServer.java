@@ -21,8 +21,6 @@ import com.tc.util.runtime.Vm;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -42,8 +40,6 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   private final StandardAppServerParameters parameters;
   private ServerResult                      result;
   private final AppServerInstallation       installation;
-  private final Map                         proxyBuilderMap         = new HashMap();
-  private final ProxyBuilder                proxyBuilder            = null;
   private final File                        workingDir;
   private final String                      serverInstanceName;
   private final File                        tcConfigFile;
