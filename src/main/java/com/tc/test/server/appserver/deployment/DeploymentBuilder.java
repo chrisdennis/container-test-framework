@@ -5,6 +5,8 @@
 
 package com.tc.test.server.appserver.deployment;
 
+import com.tc.test.server.appserver.deployment.WARBuilder.FilterDefinition;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -53,4 +55,6 @@ public interface DeploymentBuilder {
   public Deployment makeDeployment() throws Exception;
 
   public boolean isClustered();
+
+  public FilterDefinition getFilterDefinition(String name);
 }

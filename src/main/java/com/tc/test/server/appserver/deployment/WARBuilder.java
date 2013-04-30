@@ -44,27 +44,29 @@ import junit.framework.Assert;
  */
 
 public class WARBuilder implements DeploymentBuilder {
-  private static final TCLogger  logger                = TCLogging.getLogger(WARBuilder.class);
-  private FileSystemPath         warDirectoryPath;
-  private final String           warFileName;
-  private final Set              classDirectories      = new HashSet();                        /* <FileSystemPath> */
-  private final Set              libs                  = new HashSet();
-  private final List             resources             = new ArrayList();
-  private final Map              contextParams         = new HashMap();
-  private final Map              sessionConfig         = new HashMap();
-  private final List             listeners             = new ArrayList();
-  private final List             servlets              = new ArrayList();
-  private final List             filters               = new ArrayList();
-  private final Map              taglibs               = new HashMap();
-  private final FileSystemPath   tempDirPath;
-  private final Map              errorPages            = new HashMap();
+  private static final TCLogger        logger                = TCLogging.getLogger(WARBuilder.class);
+  private FileSystemPath               warDirectoryPath;
+  private final String                 warFileName;
+  private final Set                    classDirectories      = new HashSet();                        /*
+                                                                                                       * <FileSystemPath>
+                                                                                                       */
+  private final Set                    libs                  = new HashSet();
+  private final List                   resources             = new ArrayList();
+  private final Map                    contextParams         = new HashMap();
+  private final Map                    sessionConfig         = new HashMap();
+  private final List                   listeners             = new ArrayList();
+  private final List                   servlets              = new ArrayList();
+  private final List<FilterDefinition> filters               = new ArrayList();
+  private final Map                    taglibs               = new HashMap();
+  private final FileSystemPath         tempDirPath;
+  private final Map                    errorPages            = new HashMap();
 
-  private String                 dispatcherServletName = null;
+  private String                       dispatcherServletName = null;
 
-  private final TestConfigObject testConfig;
-  private final FileSystemPath   tmpResourcePath;
-  private final boolean          clustered;
-  private boolean                neededWebXml          = true;
+  private final TestConfigObject       testConfig;
+  private final FileSystemPath         tmpResourcePath;
+  private final boolean                clustered;
+  private boolean                      neededWebXml          = true;
 
   public WARBuilder(File tempDir, TestConfigObject config) throws IOException {
     this(File.createTempFile("test", ".war", tempDir).getAbsolutePath(), tempDir, config, true);
@@ -208,13 +210,13 @@ public class WARBuilder implements DeploymentBuilder {
         writeContextParam(pw, (String) param.getKey(), (String) param.getValue());
       }
 
-      for (Iterator it = filters.iterator(); it.hasNext();) {
-        FilterDefinition definition = (FilterDefinition) it.next();
+      for (Object element : filters) {
+        FilterDefinition definition = (FilterDefinition) element;
         writeFilter(pw, definition);
       }
 
-      for (Iterator it = filters.iterator(); it.hasNext();) {
-        FilterDefinition definition = (FilterDefinition) it.next();
+      for (Object element : filters) {
+        FilterDefinition definition = (FilterDefinition) element;
         logger.debug("Writing filter mapping[" + definition.name + " -> " + definition.mapping + "]");
         pw.println("  <filter-mapping>");
         pw.println("    <filter-name>" + definition.name + "</filter-name>");
@@ -500,6 +502,15 @@ public class WARBuilder implements DeploymentBuilder {
   }
 
   @Override
+  public FilterDefinition getFilterDefinition(String name) {
+    for (FilterDefinition fd : filters) {
+      if (fd.name.equals(name)) { return fd; }
+    }
+
+    return null;
+  }
+
+  @Override
   public DeploymentBuilder addTaglib(String uri, String location) {
     taglibs.put(uri, location);
     return this;
@@ -631,12 +642,12 @@ public class WARBuilder implements DeploymentBuilder {
     }
   }
 
-  private static class FilterDefinition {
-    public final String          name;
-    public final String          mapping;
-    public final Class           filterClass;
-    public final Map             initParameters;
-    public final Set<Dispatcher> dispatchers;
+  public static class FilterDefinition {
+    private final String          name;
+    private final String          mapping;
+    private final Class           filterClass;
+    private final Map             initParameters;
+    private final Set<Dispatcher> dispatchers;
 
     public FilterDefinition(String name, String mapping, Class filterClass, Map initParameters,
                             Set<Dispatcher> dispatchers) {
@@ -645,6 +656,10 @@ public class WARBuilder implements DeploymentBuilder {
       this.filterClass = filterClass;
       this.initParameters = initParameters;
       this.dispatchers = dispatchers == null ? Collections.EMPTY_SET : dispatchers;
+    }
+
+    public void setInitParam(String name, String value) {
+      initParameters.put(name, value);
     }
   }
 
