@@ -391,14 +391,14 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
 
     List cmd = new ArrayList();
     cmd.add(getAsadminScript().getAbsolutePath());
-    cmd.add("deploy");
     cmd.add("--interactive=false");
     cmd.add("--user");
     cmd.add(ADMIN_USER);
     cmd.add("--passwordfile");
     cmd.add(getPasswdFile().getAbsolutePath());
-    cmd.add("--contextroot=" + warName);
     cmd.add("--port=" + adminPort);
+    cmd.add("deploy");
+    cmd.add("--contextroot=" + warName);
     cmd.add(warFile.getAbsolutePath());
 
     Result result = Exec.execute((String[]) cmd.toArray(new String[] {}));
