@@ -39,6 +39,9 @@ public class ServerManager {
   private static final String         TOOLKIT_RUNTIME_LOAD_CLASS = "org.terracotta.toolkit.ToolkitFactory";
 
   protected final static TCLogger     logger                     = TCLogging.getLogger(ServerManager.class);
+
+  public static final String          TC_FILTER_NAME             = "terracotta-filter";
+
   private static int                  appServerIndex             = 0;
   private final boolean               DEBUG_MODE                 = false;
 
@@ -325,7 +328,7 @@ public class ServerManager {
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
-        builder.addFilter("terracotta-filter", "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
+        builder.addFilter(TC_FILTER_NAME, "/*", filter, filterConfig, EnumSet.allOf(WARBuilder.Dispatcher.class));
       }
     }
   }
