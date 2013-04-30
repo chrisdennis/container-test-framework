@@ -119,7 +119,6 @@ public final class Resin40xAppServer extends AbstractAppServer {
     cmd.add(this.serverInstallDirectory().getAbsolutePath());
     cmd.add("-root-directory");
     cmd.add(this.instanceDir.getAbsolutePath());
-    cmd.add("-verbose");
     final String[] cmdArray = (String[]) cmd.toArray(new String[] {});
     final File watchdogLog = new File(instanceDir, "log" + File.separator + "watchdog-manager.log");
     final String nodeLogFile = new File(instanceDir + ".log").getAbsolutePath();
