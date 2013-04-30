@@ -46,11 +46,9 @@ public final class Weblogic10xAppServer extends WeblogicAppServerBase {
   }
 
   private static class TCWebLogic10xInstalledLocalContainer extends WebLogic10xInstalledLocalContainer {
-    private final AppServerParameters params;
 
     public TCWebLogic10xInstalledLocalContainer(LocalConfiguration configuration, AppServerParameters params) {
       super(configuration);
-      this.params = params;
     }
 
     @Override
