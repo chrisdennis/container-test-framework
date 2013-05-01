@@ -35,7 +35,7 @@ public final class JBoss3xAppServer extends CargoAppServer {
 
   @Override
   protected InstalledLocalContainer container(LocalConfiguration config, AppServerParameters params) {
-    return new TCJBoss3xInstalledLocalContainer(config, params.sars(), appServerInfo());
+    return new TCJBoss3xInstalledLocalContainer(config, params.sars(), appServerInfo(), params);
   }
 
   @Override
@@ -47,17 +47,19 @@ public final class JBoss3xAppServer extends CargoAppServer {
 
     private final Collection         sars;
     private final AppServerInfo      appServerInfo;
+    private final AppServerParameters params;
 
     public TCJBoss3xInstalledLocalContainer(LocalConfiguration configuration, Collection sars,
-                                            AppServerInfo appServerInfo) {
+                                            AppServerInfo appServerInfo, AppServerParameters params) {
       super(configuration);
       this.sars = sars;
       this.appServerInfo = appServerInfo;
+      this.params = params;
     }
 
     @Override
     protected void doStart(JvmLauncher arg0) throws Exception {
-      JBossHelper.startupActions(new File(getConfiguration().getHome()), sars, appServerInfo);
+      JBossHelper.startupActions(new File(getConfiguration().getHome()), sars, appServerInfo, params);
       super.doStart(arg0);
     }
   }

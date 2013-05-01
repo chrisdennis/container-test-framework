@@ -61,7 +61,7 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     instanceDir = createInstance(params);
     createInstanceDir();
 
-    setJVMRoute();
+    setJVMRoute(params);
     configurePorts();
     start_port = portMap.get("http").getPortNumber();
     admin_port = portMap.get("management-native").getPortNumber();
@@ -157,11 +157,14 @@ public final class JBoss7xAppServer extends AbstractAppServer {
    * Set the jvmroute in the standalone.xml config as per <subsystem xmlns="urn:jboss:domain:web:1.1"...
    * instance-id="{jvmroute}">
    */
-  private void setJVMRoute() throws IOException {
-    List<ReplaceLine.Token> tokens = new ArrayList<ReplaceLine.Token>();
-    tokens.add(new ReplaceLine.Token(256, "(>)", " instance-id=\"" + instanceName + "\">"));
-    File dest = new File(instanceDir, "configuration/standalone.xml");
-    ReplaceLine.parseFile(tokens.toArray(new ReplaceLine.Token[] {}), dest);
+  private void setJVMRoute(StandardAppServerParameters params) throws IOException {
+    String jvmRoute = params.properties().getProperty("jvmRoute");
+    if (jvmRoute != null) {
+      List<ReplaceLine.Token> tokens = new ArrayList<ReplaceLine.Token>();
+      tokens.add(new ReplaceLine.Token(256, "(>)", " instance-id=\"" + instanceName + "\">"));
+      File dest = new File(instanceDir, "configuration/standalone.xml");
+      ReplaceLine.parseFile(tokens.toArray(new ReplaceLine.Token[] {}), dest);
+    }
   }
 
   /*
@@ -292,8 +295,8 @@ public final class JBoss7xAppServer extends AbstractAppServer {
    * Helps map line numbers in the <jbosshome>/standalone/configuration/standalone.xml with the associated ports
    */
   private static class PortLine {
-    private final int    lineNumber;
-    private final int    portNumber;
+    private final int lineNumber;
+    private final int portNumber;
 
     public PortLine(String portID, int lineNumber, int portNumber) {
       this.lineNumber = lineNumber;
