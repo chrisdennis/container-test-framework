@@ -27,10 +27,10 @@ public class JARBuilder {
   private static final Log     logger           = LogFactory.getLog(JARBuilder.class);
 
   private FileSystemPath       jarDirectoryPath;
-  private String               jarFileName;
-  private Set                  classDirectories = new HashSet();
-  private Set                  libs             = new HashSet();
-  private List                 resources        = new ArrayList();
+  private final String               jarFileName;
+  private final Set                  classDirectories = new HashSet();
+  private final Set                  libs             = new HashSet();
+  private final List                 resources        = new ArrayList();
   private final FileSystemPath tempDirPath;
 
   public JARBuilder(String warFileName, File tempDir) {
@@ -155,6 +155,7 @@ public class JARBuilder {
     return filepath;
   }
 
+  @SuppressWarnings("resource")
   static public FileSystemPath calculatePathToClass(Class type, String pathString) {
     String pathSeparator = System.getProperty("path.separator");
     String[] tokens = pathString.split(pathSeparator);

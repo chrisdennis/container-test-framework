@@ -557,6 +557,7 @@ public class WARBuilder implements DeploymentBuilder {
     return this;
   }
 
+  @SuppressWarnings("resource")
   static public FileSystemPath calculatePathToClass(Class type, String pathString) {
     String pathSeparator = System.getProperty("path.separator");
     StringTokenizer st = new StringTokenizer(pathString, pathSeparator);

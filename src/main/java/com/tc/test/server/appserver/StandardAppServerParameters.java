@@ -29,7 +29,6 @@ public class StandardAppServerParameters implements AppServerParameters {
   private final Map<String, Deployment>     deployments      = new HashMap<String, Deployment>();
   private final Collection                  sars             = new ArrayList();
   private final Collection<ValveDefinition> valves           = new ArrayList();
-  private final Collection<String>          tomcatServerJars = new ArrayList();
   private final String                      instanceName;
   private final Properties                  props;
   private String                            jvmArgs          = "";
@@ -52,10 +51,7 @@ public class StandardAppServerParameters implements AppServerParameters {
     valves.add(def);
   }
 
-  public final void addTomcatServerJar(String jar) {
-    tomcatServerJars.add(jar);
-  }
-
+  @Override
   public final String jvmArgs() {
     return jvmArgs;
   }
@@ -64,6 +60,7 @@ public class StandardAppServerParameters implements AppServerParameters {
     this.jvmArgs += jvmArgsVar + " ";
   }
 
+  @Override
   public final List<String> extraClasspath() {
     return extraClassPath;
   }
@@ -72,6 +69,7 @@ public class StandardAppServerParameters implements AppServerParameters {
     extraClassPath.add(classpathVar);
   }
 
+  @Override
   public final Map<String, File> deployables() {
     Map<String, File> deployables = new HashMap<String, File>();
     for (Map.Entry<String, Deployment> e : deployments.entrySet()) {
@@ -80,14 +78,17 @@ public class StandardAppServerParameters implements AppServerParameters {
     return deployables;
   }
 
+  @Override
   public Map<String, Deployment> deployments() {
     return deployments;
   }
 
+  @Override
   public final String instanceName() {
     return instanceName;
   }
 
+  @Override
   public final Properties properties() {
     return props;
   }
@@ -135,15 +136,13 @@ public class StandardAppServerParameters implements AppServerParameters {
     appendSysProp(name, Boolean.toString(b));
   }
 
+  @Override
   public Collection sars() {
     return sars;
   }
 
+  @Override
   public Collection<ValveDefinition> valves() {
     return valves;
-  }
-
-  public Collection<String> tomcatServerJars() {
-    return tomcatServerJars;
   }
 }

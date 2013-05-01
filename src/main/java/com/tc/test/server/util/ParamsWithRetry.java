@@ -21,38 +21,42 @@ public class ParamsWithRetry implements AppServerParameters {
     this.retryNum = retryNum;
   }
 
+  @Override
   public List<String> extraClasspath() {
     return delegate.extraClasspath();
   }
 
+  @Override
   public String instanceName() {
     return delegate.instanceName() + (retryNum == 0 ? "" : "-retry" + retryNum);
   }
 
+  @Override
   public String jvmArgs() {
     return delegate.jvmArgs();
   }
 
+  @Override
   public Properties properties() {
     return delegate.properties();
   }
 
+  @Override
   public Collection sars() {
     return delegate.sars();
   }
 
+  @Override
   public Map deployables() {
     return delegate.deployables();
   }
 
+  @Override
   public Collection<ValveDefinition> valves() {
     return delegate.valves();
   }
 
-  public Collection<String> tomcatServerJars() {
-    return delegate.tomcatServerJars();
-  }
-
+  @Override
   public Map deployments() {
     return delegate.deployments();
   }
