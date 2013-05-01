@@ -23,8 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class JBossHelper {
-  public static void startupActions(File serverDir, Collection sars, AppServerInfo appServerInfo,
-                                    Collection<String> tomcatServerJars) throws IOException {
+  public static void startupActions(File serverDir, Collection sars, AppServerInfo appServerInfo) throws IOException {
     if ((appServerInfo.getMajor().equals("5") && appServerInfo.getMinor().startsWith("1"))) {
       writePortsConfigJBoss51x(new PortChooser(), serverDir, appServerInfo);
     } else if (appServerInfo.getMajor().equals("6")) {
@@ -49,9 +48,6 @@ public class JBossHelper {
 
     File dest = new File(serverLib);
     dest.mkdirs();
-    for (String jar : tomcatServerJars) {
-      FileUtils.copyFileToDirectory(new File(jar), dest);
-    }
 
     for (Iterator i = sars.iterator(); i.hasNext();) {
       File sarFile = (File) i.next();
