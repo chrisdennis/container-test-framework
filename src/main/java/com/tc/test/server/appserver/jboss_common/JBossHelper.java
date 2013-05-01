@@ -6,8 +6,13 @@ package com.tc.test.server.appserver.jboss_common;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.tc.test.AppServerInfo;
+import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.util.PortChooser;
 import com.tc.util.ReplaceLine;
 import com.tc.util.runtime.Os;
@@ -22,8 +27,15 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 public class JBossHelper {
-  public static void startupActions(File serverDir, Collection sars, AppServerInfo appServerInfo) throws IOException {
+  public static void startupActions(File serverDir, Collection sars, AppServerInfo appServerInfo,
+                                    AppServerParameters params) throws Exception {
     if ((appServerInfo.getMajor().equals("5") && appServerInfo.getMinor().startsWith("1"))) {
       writePortsConfigJBoss51x(new PortChooser(), serverDir, appServerInfo);
     } else if (appServerInfo.getMajor().equals("6")) {
@@ -53,6 +65,33 @@ public class JBossHelper {
       File sarFile = (File) i.next();
       File deploy = new File(serverDir, "deploy");
       FileUtils.copyFileToDirectory(sarFile, deploy);
+    }
+
+    setupJvmRoute(serverDir, appServerInfo, params);
+  }
+
+  private static void setupJvmRoute(File serverDir, AppServerInfo appServerInfo, AppServerParameters params)
+      throws Exception {
+    if (appServerInfo.getMajor().equals("6")) {
+      File serverXml = new File(serverDir, "deploy/jbossweb.sar/server.xml");
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(serverXml);
+
+      // set up jvmRoute
+      String jvmRoute = params.properties().getProperty("jvmRoute");
+      if (jvmRoute != null) {
+        NodeList engines = doc.getElementsByTagName("Engine");
+        for (int i = 0; i < engines.getLength(); i++) {
+          Node engine = engines.item(i);
+          if ("jboss.web".equals(engine.getAttributes().getNamedItem("name").getNodeValue())) {
+            ((Element) engine).setAttribute("jvmRoute", jvmRoute);
+            break;
+          }
+        }
+      }
+
+      TransformerFactory transformerFactory = TransformerFactory.newInstance();
+      Transformer transformer = transformerFactory.newTransformer();
+      transformer.transform(new DOMSource(doc), new StreamResult(serverXml));
     }
   }
 

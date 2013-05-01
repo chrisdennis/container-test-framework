@@ -73,6 +73,19 @@ public class TomcatStartupActions {
         }
       }
 
+      // set up jvmRoute
+      String jvmRoute = params.properties().getProperty("jvmRoute");
+      if (jvmRoute != null) {
+        NodeList engines = doc.getElementsByTagName("Engine");
+        for (int i = 0; i < engines.getLength(); i++) {
+          Node engine = engines.item(i);
+          if ("Catalina".equals(engine.getAttributes().getNamedItem("name").getNodeValue())) {
+            ((Element) engine).setAttribute("jvmRoute", jvmRoute);
+            break;
+          }
+        }
+      }
+
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
       transformer.transform(new DOMSource(doc), new StreamResult(serverXml));
