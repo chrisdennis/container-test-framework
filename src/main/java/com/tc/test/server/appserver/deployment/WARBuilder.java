@@ -67,6 +67,7 @@ public class WARBuilder implements DeploymentBuilder {
   private final FileSystemPath         tmpResourcePath;
   private final boolean                clustered;
   private boolean                      neededWebXml          = true;
+  private String                       webXmlFragment;
 
   public WARBuilder(File tempDir, TestConfigObject config) throws IOException {
     this(File.createTempFile("test", ".war", tempDir).getAbsolutePath(), tempDir, config, true);
@@ -276,6 +277,10 @@ public class WARBuilder implements DeploymentBuilder {
           pw.println("    </taglib>");
         }
         pw.println("  </jsp-config>");
+      }
+
+      if (webXmlFragment != null) {
+        pw.println(webXmlFragment);
       }
 
       pw.println("</web-app>");
@@ -555,6 +560,11 @@ public class WARBuilder implements DeploymentBuilder {
   public DeploymentBuilder setNeededWebXml(boolean flag) {
     neededWebXml = flag;
     return this;
+  }
+
+  @Override
+  public void addWebXmlFragment(String fragment) {
+    webXmlFragment = fragment;
   }
 
   @SuppressWarnings("resource")
