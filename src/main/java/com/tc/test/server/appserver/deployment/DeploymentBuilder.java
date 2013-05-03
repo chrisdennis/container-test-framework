@@ -57,4 +57,6 @@ public interface DeploymentBuilder {
   public boolean isClustered();
 
   public FilterDefinition getFilterDefinition(String name);
+
+  public void addWebXmlFragment(String fragment);
 }
