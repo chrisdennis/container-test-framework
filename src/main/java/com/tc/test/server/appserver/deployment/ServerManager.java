@@ -107,16 +107,18 @@ public class ServerManager {
   }
 
   void stop() {
-    logger.info("Stopping all servers");
+    System.out.println("Stopping all servers: " + getServersToStop().size());
+
     for (Iterator it = getServersToStop().iterator(); it.hasNext();) {
       Stoppable stoppable = (Stoppable) it.next();
       try {
         if (!stoppable.isStopped()) {
-          logger.debug("About to stop server: " + stoppable.toString());
+          System.out.println("About to stop server: " + stoppable.toString());
           stoppable.stop();
         }
       } catch (Exception e) {
-        logger.error(stoppable, e);
+        System.out.println("Failed to stop " + stoppable);
+        e.getStackTrace();
       }
     }
 
@@ -168,13 +170,13 @@ public class ServerManager {
       dsoServer.getJvmArgs().add(iterator.next());
     }
 
-    logger.debug("Starting DSO server with sandbox: " + sandbox.getAbsolutePath());
+    System.out.println("Starting DSO server with sandbox: " + sandbox.getAbsolutePath());
     dsoServer.start();
     addServerToStop(dsoServer);
   }
 
   public void restartDSO(final boolean withPersistentStore) throws Exception {
-    logger.debug("Restarting DSO server : " + dsoServer);
+    System.out.println("Restarting DSO server : " + dsoServer);
     dsoServer.stop();
     startDSO(withPersistentStore);
   }
@@ -252,7 +254,8 @@ public class ServerManager {
       try {
         if (!(stoppable instanceof DSOServer || stoppable.isStopped())) stoppable.stop();
       } catch (Exception e) {
-        logger.error("Unable to stop server: " + stoppable, e);
+        System.out.println("Unable to stop server: " + stoppable + "Error: "
+                           + (e.getMessage() != null ? e.getMessage() : "unknown"));
       }
     }
   }
