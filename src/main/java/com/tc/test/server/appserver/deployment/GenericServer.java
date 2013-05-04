@@ -29,7 +29,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
 
   private static final String               SERVER                  = "server_";
   private static final boolean              GC_LOGGING              = true;
-  private static final boolean              ENABLE_DEBUGGER         = Boolean.getBoolean(GenericServer.class.getName()
+  public static final boolean               ENABLE_DEBUGGER         = Boolean.getBoolean(GenericServer.class.getName()
                                                                                          + ".ENABLE_DEBUGGER");
   public static boolean                     USE_DEFAULT_LICENSE_KEY = true;
 
@@ -152,7 +152,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
                                    .getAbsolutePath());
     }
 
-    if (ENABLE_DEBUGGER) {
+    if (ENABLE_DEBUGGER && appId != AppServerInfo.GLASSFISH) {
       int debugPort = 8000 + serverId;
       if (appId == AppServerInfo.WEBSPHERE) {
         parameters.appendJvmArgs("-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address="
