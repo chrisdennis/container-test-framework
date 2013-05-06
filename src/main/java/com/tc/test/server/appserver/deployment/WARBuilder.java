@@ -201,10 +201,7 @@ public class WARBuilder implements DeploymentBuilder {
 
       pw.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
 
-      pw.println("<web-app xmlns=\"http://java.sun.com/xml/ns/j2ee\"\n"
-                 + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                 + "xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\"\n"
-                 + "version=\"2.4\">\n");
+      pw.println("<web-app>\n");
 
       for (Iterator it = contextParams.entrySet().iterator(); it.hasNext();) {
         Map.Entry param = (Map.Entry) it.next();
