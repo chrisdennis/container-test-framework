@@ -120,9 +120,9 @@ public class WebsphereAppServer extends AbstractAppServer {
     }
   }
 
-  private void cleanupStrayLocks() throws IOException {
-    FileUtils.forceDelete(new File(serverInstallDir, "properties/profileRegistry.xml_LOCK"));
-    FileUtils.forceDelete(new File(serverInstallDir, "properties/was.license"));
+  private void cleanupStrayLocks() {
+    FileUtils.deleteQuietly(new File(serverInstallDir, "properties/profileRegistry.xml_LOCK"));
+    FileUtils.deleteQuietly(new File(serverInstallDir, "properties/was.license"));
   }
 
   private void copyClientLogs() {
@@ -291,8 +291,7 @@ public class WebsphereAppServer extends AbstractAppServer {
 
   private void deployWebapps() throws Exception {
     String[] args = new String[] { "-lang", "jython", "-connType", "NONE", "-profileName", instanceName, "-f",
-        new File(pyScriptsDir, DEPLOY_APPS_PY).getAbsolutePath(), warDir.getAbsolutePath().replace('\\', '/'),
-        "-tracefile", new File(instanceDir, "trace.txt").getAbsolutePath() };
+        new File(pyScriptsDir, DEPLOY_APPS_PY).getAbsolutePath(), warDir.getAbsolutePath().replace('\\', '/') };
     System.out.println("Deploying war file in: " + warDir);
     executeCommand(serverInstallDir, "wsadmin", args, pyScriptsDir, "Error in deploying warfile for " + instanceName);
     System.out.println("Done deploying war file in: " + warDir);
@@ -362,7 +361,8 @@ public class WebsphereAppServer extends AbstractAppServer {
     String output = stdout.append(IOUtils.LINE_SEPARATOR).append(stderr).toString();
     System.out.println("output: " + output);
     if (result.getExitCode() != 0) {
-      throw new RuntimeException("Command did not return 0; message is: " + errorMessage);
+      //
+      throw new RuntimeException("Command did not return 0: " + errorMessage);
     }
     return output;
   }
