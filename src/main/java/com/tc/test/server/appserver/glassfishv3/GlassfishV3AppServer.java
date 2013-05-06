@@ -158,7 +158,6 @@ public class GlassfishV3AppServer extends AbstractGlassfishAppServer {
     FileUtils.deleteQuietly(new File(instanceDir, "applications"));
     FileUtils.deleteQuietly(new File(instanceDir, "osgi-cache"));
     FileUtils.deleteQuietly(new File(instanceDir, "generated"));
-    FileUtils.deleteQuietly(new File(instanceDir, "war"));
   }
 
   @Override
