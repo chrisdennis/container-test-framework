@@ -44,6 +44,7 @@ public final class Tomcat6xAppServer extends CargoAppServer {
       this.params = params;
       config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(AppServerUtil.getPort()));
       config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(AppServerUtil.getPort()));
+      config.setProperty(TomcatPropertySet.CONNECTOR_EMPTY_SESSION_PATH, "false");
     }
 
     @Override

@@ -35,12 +35,6 @@ public final class Tomcat7xAppServer extends CargoAppServer {
     return new TCTomcat7xInstalledLocalContainer(config, params);
   }
 
-  // @Override
-  // protected void setConfigProperties(LocalConfiguration config) throws Exception {
-  // config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(AppServerUtil.getPort()));
-  // config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(AppServerUtil.getPort()));
-  // }
-
   private static class TCTomcat7xInstalledLocalContainer extends Tomcat7xInstalledLocalContainer {
 
     private final AppServerParameters params;
