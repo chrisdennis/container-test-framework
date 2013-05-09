@@ -7,6 +7,7 @@ package com.tc.test.server.appserver.weblogic12x;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
+import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.weblogic.WebLogic12xInstalledLocalContainer;
 
 import com.tc.test.server.appserver.AppServerParameters;
@@ -47,7 +48,7 @@ public final class Weblogic12xAppServer extends WeblogicAppServerBase {
 
   @Override
   protected void setConfigProperties(LocalConfiguration config) throws Exception {
-    // config.setProperty(WebLogicPropertySet.DOMAIN, "domain");
+    config.setProperty(GeneralPropertySet.HOSTNAME, "0.0.0.0");
   }
 
   private static class TCWebLogic12xInstalledLocalContainer extends WebLogic12xInstalledLocalContainer {
