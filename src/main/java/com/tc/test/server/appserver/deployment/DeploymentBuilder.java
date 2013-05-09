@@ -59,4 +59,6 @@ public interface DeploymentBuilder {
   public FilterDefinition getFilterDefinition(String name);
 
   public void addWebXmlFragment(String fragment);
+
+  public void setWebAppVersion(String version);
 }
