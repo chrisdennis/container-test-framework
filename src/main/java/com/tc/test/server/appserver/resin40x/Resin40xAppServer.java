@@ -242,6 +242,7 @@ public final class Resin40xAppServer extends AbstractAppServer {
     replaceToken("@resin.servlet.port@", String.valueOf(resin_port), confFile);
     replaceToken("@resin.watchdog.port@", String.valueOf(watchdog_port), confFile);
     replaceToken("@resin.cluster.port@", String.valueOf(cluster_port), confFile);
+    replaceToken("@resin.server.id@", instanceName, confFile);
     StringBuilder resinExtraJvmArgs = new StringBuilder();
     for (String ja : jvmargs) {
       resinExtraJvmArgs.append("<jvm-arg>").append(ja).append("</jvm-arg>").append("\n");
