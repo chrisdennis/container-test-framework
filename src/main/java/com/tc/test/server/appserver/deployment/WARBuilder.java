@@ -45,6 +45,8 @@ import junit.framework.Assert;
 
 public class WARBuilder implements DeploymentBuilder {
   private static final TCLogger        logger                = TCLogging.getLogger(WARBuilder.class);
+  private static final String          WEBAPP_VERSION_STRING = "version=\"%s\" xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_%s.xsd\"";
+
   private FileSystemPath               warDirectoryPath;
   private final String                 warFileName;
   private final Set                    classDirectories      = new HashSet();                        /*
@@ -68,6 +70,7 @@ public class WARBuilder implements DeploymentBuilder {
   private final boolean                clustered;
   private boolean                      neededWebXml          = true;
   private String                       webXmlFragment;
+  private String                       webAppVersion         = "2.5";
 
   public WARBuilder(File tempDir, TestConfigObject config) throws IOException {
     this(File.createTempFile("test", ".war", tempDir).getAbsolutePath(), tempDir, config, true);
@@ -92,6 +95,11 @@ public class WARBuilder implements DeploymentBuilder {
   public DeploymentBuilder addClassesDirectory(FileSystemPath path) {
     classDirectories.add(path);
     return this;
+  }
+
+  @Override
+  public void setWebAppVersion(String version) {
+    webAppVersion = version;
   }
 
   @Override
@@ -192,6 +200,10 @@ public class WARBuilder implements DeploymentBuilder {
     }
   }
 
+  private static String getWebAppVersionString(String version) {
+    return String.format(WEBAPP_VERSION_STRING, version, version.replace('.', '_'));
+  }
+
   private void createWebXML(FileSystemPath webInfDir) throws IOException {
     FileSystemPath webXML = webInfDir.file("web.xml");
     FileOutputStream fos = new FileOutputStream(webXML.getFile());
@@ -201,7 +213,7 @@ public class WARBuilder implements DeploymentBuilder {
 
       pw.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
 
-      pw.println("<web-app version=\"3.0\" xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\">\n");
+      pw.println("<web-app " + getWebAppVersionString(webAppVersion) + ">\n");
 
       for (Iterator it = contextParams.entrySet().iterator(); it.hasNext();) {
         Map.Entry param = (Map.Entry) it.next();
