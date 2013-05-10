@@ -21,6 +21,7 @@ import com.tc.util.runtime.Vm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -217,7 +218,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
    */
   @Override
   public WebResponse ping(final String url, final WebClient wc) throws IOException {
-    wc.getOptions().setTimeout(180000);
+    wc.getOptions().setTimeout((int) TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES));
     String fullURL = "http://localhost:" + result.serverPort() + url;
     return wc.getPage(fullURL).getWebResponse();
   }
