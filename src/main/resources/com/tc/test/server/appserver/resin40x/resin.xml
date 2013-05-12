@@ -3,7 +3,8 @@
   -->
 <resin xmlns="http://caucho.com/ns/resin"
        xmlns:resin="urn:java:com.caucho.resin">
-
+  <case-insensitive>false</case-insensitive>
+  
   <!-- property-based Resin configuration -->
   <resin:properties path="${__DIR__}/resin.properties" optional="true"/>
   <resin:properties path="cloud:/resin.properties"
@@ -85,8 +86,8 @@
     <!-- define the servers in the cluster -->
     <!--server-multi id-prefix="app-" address-list="${app_servers}" port="6800"/-->
 
-    
     <server id="@resin.server.id@" address="127.0.0.1" port="@resin.cluster.port@" watchdog-port="@resin.watchdog.port@">
+      
       <http port="@resin.servlet.port@"/>
       <jvm-arg>-Xmx512m</jvm-arg> 
       <jvm-arg>-Xss1m</jvm-arg> 
