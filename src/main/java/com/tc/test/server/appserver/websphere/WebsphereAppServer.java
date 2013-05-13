@@ -68,7 +68,7 @@ public class WebsphereAppServer extends AbstractAppServer {
   @Override
   public ServerResult start(ServerParameters parameters) throws Exception {
     init(parameters);
-    cleanupStrayLocks();
+    cleanupBeforeRun();
     createPortFile();
     copyPythonScripts();
     patchTerracottaPy();
@@ -120,17 +120,24 @@ public class WebsphereAppServer extends AbstractAppServer {
     }
   }
 
-  private void cleanupStrayLocks() {
+  private void cleanupBeforeRun() {
     FileUtils.deleteQuietly(new File(serverInstallDir, "properties/profileRegistry.xml_LOCK"));
     FileUtils.deleteQuietly(new File(serverInstallDir, "properties/was.license"));
+    FileUtils.deleteQuietly(new File(serverInstallDir, "logs"));
   }
 
   private void copyClientLogs() {
+    File websphereLogs = new File(serverInstallDir, "logs");
     File srcDir = new File(instanceDir, "terracotta");
 
     if (srcDir.isDirectory()) {
       File dstDir = new File(instanceDir, "logs");
       if (dstDir.isDirectory()) {
+        try {
+          FileUtils.copyDirectoryToDirectory(websphereLogs, dstDir);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
         try {
           FileUtils.copyDirectoryToDirectory(srcDir, dstDir);
         } catch (IOException e) {
