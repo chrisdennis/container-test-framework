@@ -15,7 +15,6 @@ import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
 import com.tc.test.server.util.AppServerUtil;
-import com.tc.text.Banner;
 import com.tc.util.PortChooser;
 import com.tc.util.runtime.Os;
 
@@ -127,27 +126,28 @@ public class WebsphereAppServer extends AbstractAppServer {
   }
 
   private void copyClientLogs() {
-    File websphereLogs = new File(serverInstallDir, "logs");
+    // copy TC logs
     File srcDir = new File(instanceDir, "terracotta");
+    File dstDir = new File(instanceDir, "logs");
 
-    if (srcDir.isDirectory()) {
-      File dstDir = new File(instanceDir, "logs");
+    if (srcDir.exists() && srcDir.isDirectory()) {
       if (dstDir.isDirectory()) {
-        try {
-          FileUtils.copyDirectoryToDirectory(websphereLogs, dstDir);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
         try {
           FileUtils.copyDirectoryToDirectory(srcDir, dstDir);
         } catch (IOException e) {
           e.printStackTrace();
         }
-      } else {
-        Banner.warnBanner(dstDir + " is not a directory?");
       }
-    } else {
-      Banner.warnBanner(srcDir + " is not a directory?");
+    }
+
+    // copy websphere preparation logs
+    File websphereLogs = new File(serverInstallDir, "logs");
+    if (websphereLogs.exists() && websphereLogs.isDirectory()) {
+      try {
+        FileUtils.copyDirectoryToDirectory(websphereLogs, instanceDir);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
