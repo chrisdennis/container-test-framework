@@ -153,7 +153,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
                                    .getAbsolutePath());
     }
 
-    if (ENABLE_DEBUGGER && appId != AppServerInfo.GLASSFISH) {
+    if (ENABLE_DEBUGGER) {
       int debugPort = 8000 + serverId;
       if (appId == AppServerInfo.WEBSPHERE) {
         parameters.appendJvmArgs("-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address="
