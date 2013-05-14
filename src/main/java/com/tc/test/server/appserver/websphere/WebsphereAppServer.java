@@ -367,7 +367,8 @@ public class WebsphereAppServer extends AbstractAppServer {
     final StringBuffer stderr = new StringBuffer(result.getStderr());
     String output = stdout.append(IOUtils.LINE_SEPARATOR).append(stderr).toString();
     System.out.println("output: " + output);
-    if (result.getExitCode() != 0) {
+    boolean success = output.contains("INSTCONFPARTIALSUCCESS") || output.contains("INSTCONFSUCCESS");
+    if (result.getExitCode() != 0 && !success) {
       //
       throw new RuntimeException("Command did not return 0: " + errorMessage);
     }
