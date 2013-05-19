@@ -6,8 +6,6 @@ package com.tc.test.server.appserver.deployment;
 
 import com.tc.config.test.schema.L2ConfigBuilder;
 import com.tc.config.test.schema.TerracottaConfigBuilder;
-import com.tc.management.beans.L2MBeanNames;
-import com.tc.management.beans.TCServerInfoMBean;
 import com.tc.objectserver.control.ExtraProcessServerControl;
 import com.tc.util.TcConfigBuilder;
 
@@ -20,8 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerInvocationHandler;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -63,35 +59,6 @@ public class DSOServer extends AbstractStoppable {
     serverProc.writeOutputTo(new FileOutputStream(new File(workingDir, "dso-server.log")));
     serverProc.getJvmArgs().addAll(jvmArgs);
     serverProc.start();
-    String jmxUrl = "service:jmx:jmxmp://localhost:" + adminPort;
-    final long timeout = (5 * 60) * 1000L + System.currentTimeMillis();
-    while (System.currentTimeMillis() < timeout && !isServerFullyStarted(jmxUrl) && serverProc.isRunning()) {
-      System.out.println("server starting but not yet ready, waiting...");
-      Thread.sleep(1000L);
-    }
-  }
-
-  private boolean isServerFullyStarted(String jmxUrl) {
-    logger.debug("Connecting to DSO server at " + jmxUrl);
-    JMXConnector jmxc = null;
-    try {
-      JMXServiceURL url = new JMXServiceURL(jmxUrl);
-      jmxc = getJmxConnector(url);
-      MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-      TCServerInfoMBean serverBean = MBeanServerInvocationHandler.newProxyInstance(mbsc, L2MBeanNames.TC_SERVER_INFO,
-                                                                                   TCServerInfoMBean.class, false);
-      return serverBean.isActive() || serverBean.isPassiveStandby() || serverBean.isPassiveUninitialized();
-    } catch (Exception e) {
-      return false;
-    } finally {
-      if (jmxc != null) {
-        try {
-          jmxc.close();
-        } catch (IOException ex) {
-          //
-        }
-      }
-    }
   }
 
   protected static JMXConnector getJmxConnector(final JMXServiceURL url) throws IOException {
