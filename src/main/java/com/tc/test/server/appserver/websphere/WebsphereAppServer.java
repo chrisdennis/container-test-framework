@@ -5,9 +5,12 @@ package com.tc.test.server.appserver.websphere;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Replace;
 
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
+import com.tc.test.TestConfigObject;
 import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
@@ -15,50 +18,55 @@ import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
 import com.tc.test.server.util.AppServerUtil;
-import com.tc.util.PortChooser;
+import com.tc.util.StringUtil;
 import com.tc.util.runtime.Os;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 public class WebsphereAppServer extends AbstractAppServer {
+  private static volatile boolean resetRepo;
+  private static final String     TERRACOTTA_PY              = "terracotta.py";
+  private static final String     DEPLOY_APPS_PY             = "deployApps.py";
+  private static final String     ENABLE_DSO_PY              = "enable-dso.py";
+  private static final String     DSO_JVMARGS                = "__DSO_JVMARGS__";
+  private static final int        START_STOP_TIMEOUT_SECONDS = 5 * 60;
 
-  private static final String TERRACOTTA_PY              = "terracotta.py";
-  private static final String DEPLOY_APPS_PY             = "deployApps.py";
-  private static final String ENABLE_DSO_PY              = "enable-dso.py";
-  private static final String DSO_JVMARGS                = "__DSO_JVMARGS__";
-  private static final String PORTS_DEF                  = "ports.def";
-  private static final int    START_STOP_TIMEOUT_SECONDS = 5 * 60;
+  private final String[]          scripts                    = new String[] { DEPLOY_APPS_PY, TERRACOTTA_PY,
+      ENABLE_DSO_PY                                         };
 
-  private final String[]      scripts                    = new String[] { DEPLOY_APPS_PY, TERRACOTTA_PY, ENABLE_DSO_PY };
+  private final String            policy                     = "grant codeBase \"file:FILENAME\" {"
+                                                               + IOUtils.LINE_SEPARATOR
+                                                               + "  permission java.security.AllPermission;"
+                                                               + IOUtils.LINE_SEPARATOR + "};" + IOUtils.LINE_SEPARATOR;
+  private String                  instanceName;
+  private String                  dsoJvmArgs;
+  private int                     webspherePort;
+  private File                    sandbox;
+  private File                    instanceDir;
+  private File                    pyScriptsDir;
+  private File                    dataDir;
+  private File                    warDir;
+  private File                    serverInstallDir;
+  private File                    extraScript;
+  private File                    profileRepo;
+  private File                    profileResistry;
+  private String                  processId;
 
-  private final String        policy                     = "grant codeBase \"file:FILENAME\" {"
-                                                           + IOUtils.LINE_SEPARATOR
-                                                           + "  permission java.security.AllPermission;"
-                                                           + IOUtils.LINE_SEPARATOR + "};" + IOUtils.LINE_SEPARATOR;
-  private String              instanceName;
-  private String              dsoJvmArgs;
-  private int                 webspherePort;
-  private File                sandbox;
-  private File                instanceDir;
-  private File                pyScriptsDir;
-  private File                dataDir;
-  private File                warDir;
-  private File                portDefFile;
-  private File                serverInstallDir;
-  private File                extraScript;
-
-  private Thread              serverThread;
+  private Thread                  serverThread;
 
   public WebsphereAppServer(AppServerInstallation installation) {
     super(installation);
@@ -67,13 +75,10 @@ public class WebsphereAppServer extends AbstractAppServer {
   @Override
   public ServerResult start(ServerParameters parameters) throws Exception {
     init(parameters);
-    cleanupBeforeRun();
-    createPortFile();
+    reset();
     copyPythonScripts();
     patchTerracottaPy();
-    deleteProfileIfExists();
     createProfile();
-    verifyProfile();
     deployWebapps();
     addTerracottaToServerPolicy();
     enableDSO();
@@ -93,7 +98,8 @@ public class WebsphereAppServer extends AbstractAppServer {
     serverThread.setDaemon(true);
     serverThread.start();
     AppServerUtil.waitForPort(webspherePort, START_STOP_TIMEOUT_SECONDS * 1000);
-    System.out.println("Websphere instance " + instanceName + " started on port " + webspherePort);
+    System.out.println("Websphere instance " + instanceName + " started on port " + webspherePort + ", process id "
+                       + processId);
     return new AppServerResult(webspherePort, this);
   }
 
@@ -103,43 +109,85 @@ public class WebsphereAppServer extends AbstractAppServer {
       stopWebsphere();
       // ws lie about shuttting down completely. Sleep to give it
       // some time to kill the process
-      Thread.sleep(5 * 1000);
+      Thread.sleep(3 * 1000);
     } catch (Exception e) {
-      // don't fail the test by rethrowing
       e.printStackTrace();
     } finally {
-      // copy the terracotta client log files into a place that won't be destroy when profile is deleted
-      copyClientLogs();
-
-      try {
-        deleteProfile();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      forceKill();
+      copyOperationLogs();
+      cleanup();
     }
   }
 
-  private void cleanupBeforeRun() {
+  private void forceKill() {
+    try {
+      if (processId != null) {
+        if (Os.isWindows()) {
+          Runtime.getRuntime().exec("taskkill /f /pid " + processId);
+        } else if (Os.isLinux()) {
+          Runtime.getRuntime().exec("kill -9 " + processId);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void cleanup() {
+    FileUtils.deleteQuietly(new File(instanceDir, "bin"));
+    FileUtils.deleteQuietly(new File(instanceDir, "config"));
+    FileUtils.deleteQuietly(new File(instanceDir, "configuration"));
+    FileUtils.deleteQuietly(new File(instanceDir, "etc"));
+    FileUtils.deleteQuietly(new File(instanceDir, "firststeps"));
+    FileUtils.deleteQuietly(new File(instanceDir, "installableApps"));
+    FileUtils.deleteQuietly(new File(instanceDir, "installedApps"));
+    FileUtils.deleteQuietly(new File(instanceDir, "installedConnectors"));
+    FileUtils.deleteQuietly(new File(instanceDir, "installedFilters"));
+    FileUtils.deleteQuietly(new File(instanceDir, "properties"));
+    FileUtils.deleteQuietly(new File(instanceDir, "servers"));
+    FileUtils.deleteQuietly(new File(instanceDir, "temp"));
+    FileUtils.deleteQuietly(new File(instanceDir, "tranlog"));
+    FileUtils.deleteQuietly(new File(instanceDir, "workspace"));
+    FileUtils.deleteQuietly(new File(instanceDir, "wstemp"));
+
+  }
+
+  private void reset() throws Exception {
+    // cleanup
     FileUtils.deleteQuietly(new File(serverInstallDir, "properties/profileRegistry.xml_LOCK"));
     FileUtils.deleteQuietly(new File(serverInstallDir, "properties/was.license"));
     FileUtils.deleteQuietly(new File(serverInstallDir, "logs"));
-  }
 
-  private void copyClientLogs() {
-    // copy TC logs
-    File srcDir = new File(instanceDir, "terracotta");
-    File dstDir = new File(instanceDir, "logs");
-
-    if (srcDir.exists() && srcDir.isDirectory()) {
-      if (dstDir.isDirectory()) {
-        try {
-          FileUtils.copyDirectoryToDirectory(srcDir, dstDir);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+    synchronized (this) {
+      if (!resetRepo) {
+        // empty profile registry
+        String emptyRegistry = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><profiles>" + StringUtil.LINE_SEPARATOR
+                               + "</profiles>";
+        writeProfileRegistry(emptyRegistry);
+        resetRepo = true;
       }
     }
+  }
 
+  private String readProfileRegistry() throws Exception {
+    FileReader reader = new FileReader(profileResistry);
+    try {
+      return IOUtils.toString(reader);
+    } finally {
+      IOUtils.closeQuietly(reader);
+    }
+  }
+
+  private void writeProfileRegistry(String content) throws Exception {
+    PrintWriter writer = new PrintWriter(profileResistry);
+    try {
+      writer.println(content);
+    } finally {
+      IOUtils.closeQuietly(writer);
+    }
+  }
+
+  private void copyOperationLogs() {
     // copy websphere preparation logs
     File websphereLogs = new File(serverInstallDir, "logs");
     if (websphereLogs.exists() && websphereLogs.isDirectory()) {
@@ -149,21 +197,6 @@ public class WebsphereAppServer extends AbstractAppServer {
         e.printStackTrace();
       }
     }
-  }
-
-  private void createPortFile() throws Exception {
-    PortChooser portChooser = new PortChooser();
-    webspherePort = portChooser.chooseRandomPort();
-
-    List lines = IOUtils.readLines(WebsphereAppServer.class.getResourceAsStream(PORTS_DEF));
-    lines.set(0, (String) lines.get(0) + webspherePort);
-
-    for (int i = 1; i < lines.size(); i++) {
-      String line = (String) lines.get(i);
-      lines.set(i, line + portChooser.chooseRandomPort());
-    }
-
-    writeLines(lines, portDefFile, false);
   }
 
   private void copyPythonScripts() throws Exception {
@@ -203,56 +236,89 @@ public class WebsphereAppServer extends AbstractAppServer {
     executeCommand(serverInstallDir, "wsadmin", args, pyScriptsDir, "Error executing " + script);
   }
 
-  private void deleteProfile() throws Exception {
-    String[] args = new String[] { "-delete", "-profileName", instanceName };
-    executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir, "Error in deleting profile for "
-                                                                               + instanceName);
-  }
-
   private void createProfile() throws Exception {
-    String defaultTemplate = new File(serverInstallDir.getAbsolutePath(), "profileTemplates/default").getAbsolutePath();
-    String[] args = new String[] { "-create", "-templatePath", defaultTemplate, "-profileName", instanceName,
-        "-profilePath", instanceDir.getAbsolutePath(), "-portsFile", portDefFile.getAbsolutePath(),
-        "-enableAdminSecurity", "false" }; // , "-isDeveloperServer"
-    System.out.println("Creating profile for instance " + instanceName + "...");
     long start = System.currentTimeMillis();
-    String output = executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir,
-                                   "Error in creating profile for " + instanceName);
-
-    // there's still a chance websphere misreports profile doesn't exist, we try deleting it and recreate one more time
-    if (output.contains("is already in use. Specify another name")) {
-      deleteProfile();
-      executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir, "Error in creating profile for "
-                                                                                 + instanceName);
+    File profileTemplate = new File(profileRepo, appServerInfo().toString() + File.separator + "default");
+    FileUtils.copyDirectory(profileTemplate, instanceDir);
+    Collection<File> executables = FileUtils.listFiles(instanceDir, new String[] { "sh", "bat" }, true);
+    for (File file : executables) {
+      file.setExecutable(true);
     }
 
+    String entry = "<profile isAReservationTicket=\"false\" " + "isDefault=\"false\" name=\"" + instanceName
+                   + "\" path=\"" + instanceDir.getAbsolutePath() + "\" template=\""
+                   + new File(serverInstallDir, "profileTemplates" + File.separator + "default").getAbsolutePath()
+                   + "\"/>";
+
+    addProfileEntry(entry);
+    createProfileStartupFile();
+    randomizePorts();
     long elapsedMillis = System.currentTimeMillis() - start;
     long elapsedSeconds = elapsedMillis / 1000;
     Long elapsedMinutes = new Long(elapsedSeconds / 60);
     System.out.println("Profile creation time: "
                        + MessageFormat.format("{0,number,##}:{1}.{2}", new Object[] { elapsedMinutes,
                            new Long(elapsedSeconds % 60), new Long(elapsedMillis % 1000) }));
+
   }
 
-  private void verifyProfile() throws Exception {
-    if (!(instanceDir.exists() && instanceDir.isDirectory())) {
-      Exception e = new Exception("Unable to verify profile for instance '" + instanceName + "'");
-      System.err.println("WebSphere profile '" + instanceName + "' does not exist at " + instanceDir.getAbsolutePath());
-      throw e;
+  private void createProfileStartupFile() throws Exception {
+    String fileName = Os.isWindows() ? instanceName + ".bat" : instanceName + ".sh";
+    File startupFile = new File(serverInstallDir, "properties/fsdb/" + fileName);
+    startupFile.getParentFile().mkdirs();
+    PrintWriter writer = new PrintWriter(startupFile);
+    try {
+      if (Os.isWindows()) {
+        writer.println("set WAS_USER_SCRIPT=" + instanceDir.getAbsolutePath() + "\\bin\\setupCmdLine.bat");
+      } else {
+        writer.println("#!/bin/sh\nexport WAS_USER_SCRIPT=" + instanceDir.getAbsolutePath() + "/bin/setupCmdLine.sh");
+      }
+      startupFile.setExecutable(true);
+    } finally {
+      IOUtils.closeQuietly(writer);
     }
-    System.out.println("WebSphere profile '" + instanceName + "' is verified at " + instanceDir.getAbsolutePath());
   }
 
-  private void deleteProfileIfExists() throws Exception {
-    // call "manageprofiles.sh -validateAndUpdateRegistry" to clean out corrupted profiles
-    String[] args = new String[] { "-validateAndUpdateRegistry" };
-    executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir, "");
-    args = new String[] { "-listProfiles" };
-    String output = executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir, "");
-    if (output.indexOf(instanceName) >= 0) {
-      args = new String[] { "-delete", "-profileName", instanceName };
-      executeCommand(serverInstallDir, "manageprofiles", args, serverInstallDir, "Trying to clean up existing profile");
+  private void randomizePorts() throws Exception {
+    List<String> tokens = Arrays.asList("@WC_defaulthost@", "@WC_adminhost@", "@WC_defaulthost_secure@",
+                                        "@WC_adminhost_secure@", "@BOOTSTRAP_ADDRESS@", "@SOAP_CONNECTOR_ADDRESS@",
+                                        "@IPC_CONNECTOR_ADDRESS@", "@SAS_SSL_SERVERAUTH_LISTENER_ADDRESS@",
+                                        "@CSIV2_SSL_SERVERAUTH_LISTENER_ADDRESS@",
+                                        "@CSIV2_SSL_MUTUALAUTH_LISTENER_ADDRESS@", "@ORB_LISTENER_ADDRESS@",
+                                        "@DCS_UNICAST_ADDRESS@", "@SIB_ENDPOINT_ADDRESS@",
+                                        "@SIB_ENDPOINT_SECURE_ADDRESS@", "@SIB_MQ_ENDPOINT_ADDRESS@",
+                                        "@SIB_MQ_ENDPOINT_SECURE_ADDRESS@", "@SIP_DEFAULTHOST@",
+                                        "@SIP_DEFAULTHOST_SECURE@", "@SERVERINSTALLDIR@", "@INSTANCEDIR@",
+                                        "@INSANCENAME");
+
+    for (String token : tokens) {
+      Replace replaceTask = new Replace();
+      replaceTask.setProject(new Project());
+      replaceTask.setDir(instanceDir);
+      replaceTask.setIncludes("**/*.xml,**/*.props,**/*.properties,**/*.sh,**/*.bat,**/*.metadata");
+      replaceTask.setToken(token);
+      String value = null;
+      if ("@SERVERINSTALLDIR@".equals(token)) {
+        value = serverInstallDir.getAbsolutePath().replace('\\', '/');
+      } else if ("@INSTANCEDIR@".equals(token)) {
+        value = instanceDir.getAbsolutePath().replace('\\', '/');
+      } else if ("@INSTANCENAME".equals(token)) {
+        value = instanceName;
+      } else {
+        value = String.valueOf(AppServerUtil.getPort());
+      }
+      if ("@WC_defaulthost@".equals(token)) {
+        webspherePort = Integer.valueOf(value);
+      }
+      replaceTask.setValue(value);
+      replaceTask.execute();
     }
+  }
+
+  private void addProfileEntry(String entry) throws Exception {
+    String registry = readProfileRegistry();
+    registry = registry.replace("</profiles>", entry + StringUtil.LINE_SEPARATOR + "</profiles>");
+    writeProfileRegistry(registry);
   }
 
   private void addTerracottaToServerPolicy() throws Exception {
@@ -307,7 +373,12 @@ public class WebsphereAppServer extends AbstractAppServer {
   private void startWebsphere() throws Exception {
     String[] args = new String[] { "server1", "-profileName", instanceName, "-trace", "-timeout",
         String.valueOf(START_STOP_TIMEOUT_SECONDS) };
-    executeCommand(serverInstallDir, "startServer", args, instanceDir, "Error in starting " + instanceName);
+    String output = executeCommand(serverInstallDir, "startServer", args, instanceDir, "Error in starting "
+                                                                                       + instanceName);
+    int index = output.indexOf("process id is");
+    if (index > 0) {
+      processId = output.substring(index + 13).trim();
+    }
   }
 
   private void stopWebsphere() throws Exception {
@@ -327,8 +398,9 @@ public class WebsphereAppServer extends AbstractAppServer {
     warDir = new File(sandbox, "war");
     pyScriptsDir = new File(dataDir, instanceName);
     pyScriptsDir.mkdirs();
-    portDefFile = new File(pyScriptsDir, PORTS_DEF);
     serverInstallDir = serverInstallDirectory();
+    profileRepo = new File(TestConfigObject.getInstance().cacheDir(), "websphere-profiles");
+    profileResistry = new File(serverInstallDir, "properties" + File.separator + "profileRegistry.xml");
 
     String[] jvm_args = params.jvmArgs().replaceAll("'", "").replace('\\', '/').split("\\s+");
     StringBuffer sb = new StringBuffer();
@@ -345,7 +417,6 @@ public class WebsphereAppServer extends AbstractAppServer {
     System.out.println("init{instanceDir}      ==> " + instanceDir.getAbsolutePath());
     System.out.println("init{webappDir}        ==> " + dataDir.getAbsolutePath());
     System.out.println("init{pyScriptsDir}     ==> " + pyScriptsDir.getAbsolutePath());
-    System.out.println("init{portDefFile}      ==> " + portDefFile.getAbsolutePath());
     System.out.println("init{serverInstallDir} ==> " + serverInstallDir.getAbsolutePath());
     System.out.println("init{dsoJvmArgs}       ==> " + dsoJvmArgs);
   }
