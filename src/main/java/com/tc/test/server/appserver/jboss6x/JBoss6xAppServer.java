@@ -4,6 +4,7 @@
  */
 package com.tc.test.server.appserver.jboss6x;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss6xInstalledLocalContainer;
@@ -12,6 +13,7 @@ import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.spi.jvm.JvmLauncher;
 
 import com.tc.test.AppServerInfo;
+import com.tc.test.server.ServerParameters;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.cargo.CargoAppServer;
 import com.tc.test.server.appserver.jboss_common.JBossHelper;
@@ -56,6 +58,16 @@ public final class JBoss6xAppServer extends CargoAppServer {
     config.setProperty(JBossPropertySet.JBOSS_TRANSACTION_STATUS_MANAGER_PORT,
                        Integer.toString(AppServerUtil.getPort()));
     config.setProperty(JBossPropertySet.REMOTEDEPLOY_PORT, Integer.toString(AppServerUtil.getPort()));
+  }
+
+  @Override
+  public void stop(ServerParameters rawParams) {
+    try {
+      super.stop(rawParams);
+    } finally {
+      FileUtils.deleteQuietly(new File(this.instanceDir(), "data"));
+      FileUtils.deleteQuietly(new File(this.instanceDir(), "deployers"));
+    }
   }
 
   private static class TCJBoss6xInstalledLocalContainer extends JBoss6xInstalledLocalContainer {
