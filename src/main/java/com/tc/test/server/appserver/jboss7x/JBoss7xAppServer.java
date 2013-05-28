@@ -70,17 +70,6 @@ public final class JBoss7xAppServer extends AbstractAppServer {
 
     System.err.println("Starting jboss7 " + instanceName + " on port " + start_port + "...");
 
-    // // create start command with standalone.sh
-    // File startScript = new File(new File(serverInstallDir, "bin"), getPlatformScript("standalone"));
-    // // trying to get boot log to go in the sandbox rather than the server home see
-    // // https://issues.jboss.org/browse/AS7-4271
-    // // might only work on linux see https://issues.jboss.org/browse/AS7-1947
-    // File logDir = new File(instanceDir, "log");
-    // final String startCmd[] = new String[] { startScript.getAbsolutePath(),
-    // "-Dorg.jboss.boot.log.file=" + new File(logDir, "boot.log").getAbsolutePath(),
-    // "-Djboss.server.log.dir=" + logDir.getAbsolutePath(),
-    // "-Djboss.server.base.dir=" + instanceDir.getAbsolutePath() };
-
     // Try a different startup using the java command directly, to work around the boot.log init problem mentioned above
     File logDir = new File(instanceDir, "log");
 
@@ -126,9 +115,17 @@ public final class JBoss7xAppServer extends AbstractAppServer {
     return new AppServerResult(start_port, this);
   }
 
-  // call jboss-cli to shutdown
   @Override
   public void stop(ServerParameters parameters) throws Exception {
+    try {
+      doStop(parameters);
+    } finally {
+      FileUtils.deleteQuietly(new File(instanceDir, "deployments"));
+    }
+  }
+
+  // call jboss-cli to shutdown
+  public void doStop(ServerParameters parameters) throws Exception {
     // AppServerParameters params = (AppServerParameters) parameters;
     File stopScript = new File(new File(serverInstallDirectory(), "bin"), getPlatformScript("jboss-cli"));
 

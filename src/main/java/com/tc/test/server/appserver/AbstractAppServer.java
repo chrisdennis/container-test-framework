@@ -62,6 +62,10 @@ public abstract class AbstractAppServer implements AppServer {
     return installation.appServerInfo();
   }
 
+  protected File instanceDir() {
+    return instance;
+  }
+
   /**
    * Implementing classes call this method to assign a series of properties to be available as system properties to the
    * appserver's JVM. Properties are optionally set by calling {@link StandardAppServerParameters}, passing a
