@@ -5,12 +5,15 @@
 package com.tc.test.server.appserver.resin40x;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Replace;
+import org.apache.tools.zip.ZipEntry;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -18,8 +21,6 @@ import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
-import com.tc.test.server.appserver.deployment.DeploymentBuilder;
-import com.tc.test.server.appserver.deployment.WARBuilder;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.test.server.util.ParamsWithRetry;
 import com.tc.test.server.util.RetryException;
@@ -33,10 +34,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipFile;
+
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Resin40x AppServer implementation
@@ -178,8 +183,7 @@ public final class Resin40xAppServer extends AbstractAppServer {
 
     AppServerUtil.waitForPort(resin_port, START_STOP_TIMEOUT);
     System.err.println("Started " + instanceName + " on port " + resin_port);
-    deployPingWar();
-    waitForPing();
+    waitForDeploymentToFinish(params);
     return new AppServerResult(resin_port, this);
   }
 
@@ -251,6 +255,7 @@ public final class Resin40xAppServer extends AbstractAppServer {
     copyResource("admin-users.xml", new File(getConfDirectory(), "admin-users.xml"));
     copyResource("cluster-default.xml", new File(getConfDirectory(), "cluster-default.xml"));
     copyResource("health.xml", new File(getConfDirectory(), "health.xml"));
+    copyResource("resin.properties", new File(getConfDirectory(), "resin.properties"));
     replaceToken("@resin.servlet.port@", String.valueOf(resin_port), confFile);
     replaceToken("@resin.watchdog.port@", String.valueOf(watchdog_port), confFile);
     replaceToken("@resin.cluster.port@", String.valueOf(cluster_port), confFile);
@@ -282,31 +287,74 @@ public final class Resin40xAppServer extends AbstractAppServer {
     replaceTask.execute();
   }
 
-  private File createPingWarFile(final String warName) throws Exception {
-    DeploymentBuilder builder = new WARBuilder(warName, new File(sandboxDirectory(), "war"));
-    builder.addResourceFullpath("/com/tc/test/server/appserver/resin40x", "index.html", "index.html");
-    return builder.makeDeployment().getFileSystemPath().getFile();
-  }
-
-  protected void waitForPing() throws Exception {
-    String pingUrl = "http://localhost:" + resin_port + "/ping/index.html";
-    WebClient wc = new WebClient();
-    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-    int tries = 10;
-    for (int i = 0; i < tries; i++) {
-      WebResponse response;
-      try {
-        System.out.println("Pinging " + pingUrl + " - try #" + i);
-        response = wc.getPage(pingUrl).getWebResponse();
-        if (response.getStatusCode() == 200) return;
-      } catch (Exception e) {
-        // ignored
-      }
-      ThreadUtil.reallySleep(2000);
+  protected String deployList() throws Exception {
+    List<String> deployCmd = new ArrayList<String>();
+    deployCmd.add(JAVA_CMD);
+    deployCmd.add("-jar");
+    deployCmd.add(serverInstallDirectory().getAbsolutePath() + "/lib/resin.jar");
+    deployCmd.add("--server");
+    deployCmd.add("app-0");
+    deployCmd.add("--port");
+    deployCmd.add(resin_port + "");
+    deployCmd.add("--user");
+    deployCmd.add("admin");
+    deployCmd.add("--password");
+    deployCmd.add("admin");
+    deployCmd.add("deploy-list");
+    Result result = Exec.execute(deployCmd.toArray(new String[0]));
+    if (result.getExitCode() == 0) {
+      return result.getStdout();
+    } else {
+      return "ERROR: " + result.getStdout() + "\n" + result.getStderr();
     }
   }
 
-  protected void deployPingWar() throws Exception {
-    FileUtils.copyFileToDirectory(createPingWarFile("ping.war"), getWebappsDirectory());
+  protected void waitForDeploymentToFinish(final AppServerParameters params) throws Exception {
+    Set<String> deployableContexts = new HashSet<String>();
+    for (File file : params.deployables().values()) {
+      if (file.getName().endsWith(".war")) {
+        deployableContexts.add(FilenameUtils.getBaseName(file.getName()));
+      }
+      if (file.getName().endsWith(".ear")) {
+        deployableContexts.addAll(getContextsFromEar(file));
+      }
+    }
+    System.out.println("Test contexts: " + deployableContexts);
+
+    long timeout = System.currentTimeMillis() + START_STOP_TIMEOUT;
+    while (System.currentTimeMillis() < timeout) {
+      String result = deployList();
+      if (result.startsWith("ERROR")) { throw new RuntimeException(result); }
+      String[] lines = result.trim().split("\\\\n");
+      Set<String> deployedContexts = new HashSet<String>();
+      for (String line : lines) {
+        String context = new File(line).getName();
+        deployedContexts.add(context);
+      }
+      System.out.println("Currently deployed contexts: " + deployedContexts);
+      if (deployedContexts.containsAll(deployableContexts)) {
+        break;
+      }
+      System.out.println("Deployment is not finished... waiting");
+      ThreadUtil.reallySleep(1000L);
+    }
+  }
+
+  protected List<String> getContextsFromEar(File ear) throws Exception {
+    ZipFile zip = new ZipFile(ear);
+    try {
+      InputStream appXmlStream = zip.getInputStream(new ZipEntry("META-INF/application.xml"));
+      if (appXmlStream == null) { throw new RuntimeException("Can't find META-INF/application.xml from " + ear); }
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(appXmlStream);
+      NodeList contexts = doc.getElementsByTagName("context-root");
+      List<String> result = new ArrayList<String>();
+      for (int i = 0; i < contexts.getLength(); i++) {
+        Node node = contexts.item(i);
+        result.add(node.getTextContent().replaceAll("/", ""));
+      }
+      return result;
+    } finally {
+      zip.close();
+    }
   }
 }
