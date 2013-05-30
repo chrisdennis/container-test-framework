@@ -9,6 +9,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Replace;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.tc.process.Exec;
 import com.tc.process.Exec.Result;
 import com.tc.test.server.ServerParameters;
@@ -16,12 +18,15 @@ import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
+import com.tc.test.server.appserver.deployment.DeploymentBuilder;
+import com.tc.test.server.appserver.deployment.WARBuilder;
 import com.tc.test.server.util.AppServerUtil;
 import com.tc.test.server.util.ParamsWithRetry;
 import com.tc.test.server.util.RetryException;
 import com.tc.text.Banner;
 import com.tc.util.Grep;
 import com.tc.util.PortChooser;
+import com.tc.util.concurrent.ThreadUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,6 +110,7 @@ public final class Resin40xAppServer extends AbstractAppServer {
       }
     } finally {
       FileUtils.deleteQuietly(new File(instanceDir, "resin-data"));
+      FileUtils.deleteQuietly(new File(instanceDir, "webapps"));
     }
 
   }
@@ -172,6 +178,8 @@ public final class Resin40xAppServer extends AbstractAppServer {
 
     AppServerUtil.waitForPort(resin_port, START_STOP_TIMEOUT);
     System.err.println("Started " + instanceName + " on port " + resin_port);
+    deployPingWar();
+    waitForPing();
     return new AppServerResult(resin_port, this);
   }
 
@@ -272,5 +280,33 @@ public final class Resin40xAppServer extends AbstractAppServer {
     replaceTask.setToken(token);
     replaceTask.setValue(value);
     replaceTask.execute();
+  }
+
+  private File createPingWarFile(final String warName) throws Exception {
+    DeploymentBuilder builder = new WARBuilder(warName, new File(sandboxDirectory(), "war"));
+    builder.addResourceFullpath("/com/tc/test/server/appserver/resin40x", "index.html", "index.html");
+    return builder.makeDeployment().getFileSystemPath().getFile();
+  }
+
+  protected void waitForPing() throws Exception {
+    String pingUrl = "http://localhost:" + resin_port + "/ping/index.html";
+    WebClient wc = new WebClient();
+    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    int tries = 10;
+    for (int i = 0; i < tries; i++) {
+      WebResponse response;
+      try {
+        System.out.println("Pinging " + pingUrl + " - try #" + i);
+        response = wc.getPage(pingUrl).getWebResponse();
+        if (response.getStatusCode() == 200) return;
+      } catch (Exception e) {
+        // ignored
+      }
+      ThreadUtil.reallySleep(2000);
+    }
+  }
+
+  protected void deployPingWar() throws Exception {
+    FileUtils.copyFileToDirectory(createPingWarFile("ping.war"), getWebappsDirectory());
   }
 }
