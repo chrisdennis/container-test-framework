@@ -100,7 +100,8 @@
       <web-app-deploy path="webapps"
                       expand-preserve-fileset="WEB-INF/work/**"
                       multiversion-routing="${webapp_multiversion_routing}"
-                      path-suffix="${elastic_webapp?resin.id:''}"/>
+                      path-suffix="${elastic_webapp?resin.id:''}"
+                      dependency-check-interval="5"/>
       <ear-deploy path="deploy">
         <ear-default></ear-default> 
       </ear-deploy>                       
