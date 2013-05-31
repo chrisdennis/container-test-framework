@@ -320,24 +320,24 @@ public final class Resin40xAppServer extends AbstractAppServer {
       }
     }
     System.out.println("Test contexts: " + deployableContexts);
-
+    File serverLog = new File(instanceDir, "log/jvm-" + instanceName + ".log");
     long timeout = System.currentTimeMillis() + START_STOP_TIMEOUT;
-    while (System.currentTimeMillis() < timeout) {
-      String result = deployList();
-      if (result.startsWith("ERROR")) { throw new RuntimeException(result); }
-      String[] lines = result.trim().split("\\\\n");
-      Set<String> deployedContexts = new HashSet<String>();
-      for (String line : lines) {
-        String context = new File(line).getName();
-        deployedContexts.add(context);
+
+    while (!deployableContexts.isEmpty() && System.currentTimeMillis() < timeout) {
+      for (Iterator<String> it = deployableContexts.iterator(); it.hasNext();) {
+        String context = it.next();
+        if (isActive(context, serverLog)) {
+          System.out.println("Context " + context + " is now active");
+          it.remove();
+        }
       }
-      System.out.println("Currently deployed contexts: " + deployedContexts);
-      if (deployedContexts.containsAll(deployableContexts)) {
-        break;
-      }
-      System.out.println("Deployment is not finished... waiting");
-      ThreadUtil.reallySleep(1000L);
+      ThreadUtil.reallySleep(2000L);
     }
+  }
+
+  private boolean isActive(String context, File serverLog) throws Exception {
+    List<CharSequence> hit = Grep.grep("^.*WebApp\\[.*" + context + "\\] active.*$", serverLog);
+    return hit.size() > 0;
   }
 
   protected List<String> getContextsFromEar(File ear) throws Exception {
