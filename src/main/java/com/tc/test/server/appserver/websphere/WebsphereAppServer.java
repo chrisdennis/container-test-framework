@@ -98,8 +98,7 @@ public class WebsphereAppServer extends AbstractAppServer {
     serverThread.setDaemon(true);
     serverThread.start();
     AppServerUtil.waitForPort(webspherePort, START_STOP_TIMEOUT_SECONDS * 1000);
-    System.out.println("Websphere instance " + instanceName + " started on port " + webspherePort + ", process id "
-                       + processId);
+    System.out.println("Websphere instance " + instanceName + " started on port " + webspherePort);
     return new AppServerResult(webspherePort, this);
   }
 
