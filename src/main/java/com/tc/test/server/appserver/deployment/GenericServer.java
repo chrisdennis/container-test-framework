@@ -103,6 +103,10 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     }
     parameters.appendJvmArgs("-Xms128m -Xmx512m");
 
+    if (Os.getOsName().startsWith("HP-UX")) {
+      parameters.appendJvmArgs("-XX:ThreadStackSize=512k");
+    }
+
     if (Os.isUnix() && new File("/dev/urandom").exists()) {
       // prevent hangs reading from /dev/random
       parameters.appendSysProp("java.security.egd", "file:/dev/./urandom");
