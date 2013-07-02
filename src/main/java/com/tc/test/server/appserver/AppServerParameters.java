@@ -9,6 +9,7 @@ import com.tc.test.server.appserver.deployment.Deployment;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -19,7 +20,7 @@ import java.util.Properties;
 public interface AppServerParameters extends ServerParameters {
 
   Map<String, File> deployables();
-  
+
   Map<String, Deployment> deployments();
 
   Properties properties();
@@ -29,4 +30,6 @@ public interface AppServerParameters extends ServerParameters {
   Collection sars(); // jboss only
 
   Collection<ValveDefinition> valves(); // tomcat + variants
+
+  List<User> getUsers();
 }

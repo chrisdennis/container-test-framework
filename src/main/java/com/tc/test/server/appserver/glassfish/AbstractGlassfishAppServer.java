@@ -21,6 +21,7 @@ import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AbstractAppServer;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
+import com.tc.test.server.appserver.User;
 import com.tc.test.server.appserver.deployment.DeploymentBuilder;
 import com.tc.test.server.appserver.deployment.WARBuilder;
 import com.tc.test.server.util.AppServerUtil;
@@ -74,7 +75,6 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
 
   public static final long    START_STOP_TIMEOUT = 1000 * 300;
   protected final PortChooser pc                 = new PortChooser();
-  protected File              passwdFile;
   protected Thread            runner;
   protected File              instanceDir;
 
@@ -87,24 +87,29 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     super(installation);
   }
 
-  protected synchronized File getPasswdFile() throws IOException {
-    if (passwdFile == null) {
-      passwdFile = new File(instanceDir.getParentFile(), "passwd" + System.currentTimeMillis() + ".txt");
+  protected File getPasswdFile(User user) throws IOException {
+    File passwdFile = new File(instanceDir.getParentFile(), "passwd" + System.currentTimeMillis() + ".txt");
 
-      PrintWriter out = null;
-      try {
-        out = new PrintWriter(new FileOutputStream(passwdFile));
-        out.println("AS_ADMIN_PASSWORD=" + PASSWD);
-        out.println("AS_ADMIN_ADMINPASSWORD=" + PASSWD);
-        out.println("AS_ADMIN_MASTERPASSWORD=" + PASSWD);
-      } finally {
-        if (out != null) {
-          out.close();
-        }
+    PrintWriter out = null;
+    try {
+      out = new PrintWriter(new FileOutputStream(passwdFile));
+      out.println("AS_ADMIN_PASSWORD=" + PASSWD);
+      out.println("AS_ADMIN_ADMINPASSWORD=" + PASSWD);
+      out.println("AS_ADMIN_MASTERPASSWORD=" + PASSWD);
+      if (user != null) {
+        out.println("AS_ADMIN_USERPASSWORD=" + user.getPassword());
+      }
+    } finally {
+      if (out != null) {
+        out.close();
       }
     }
 
     return passwdFile;
+  }
+
+  protected File getPasswdFile() throws IOException {
+    return getPasswdFile(null);
   }
 
   protected static String getPlatformScript(final String name) {
@@ -139,6 +144,27 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     Result result = Exec.execute((String[]) cmd.toArray(new String[] {}), null, null, asAdminScript.getParentFile());
 
     if (result.getExitCode() != 0) { throw new RuntimeException(result.toString()); }
+  }
+
+  protected void createUsers(AppServerParameters params) throws Exception {
+    for (User user : params.getUsers()) {
+      File asAdminScript = getAsadminScript();
+
+      List cmd = new ArrayList();
+      cmd.add(asAdminScript.getAbsolutePath());
+      cmd.add("create-file-user");
+      cmd.add("--interactive=false");
+      cmd.add("--port=" + adminPort);
+      cmd.add("--user=" + ADMIN_USER);
+      cmd.add("--passwordfile");
+      cmd.add(getPasswdFile(user).getAbsolutePath());
+      cmd.add(user.getName());
+
+      Result result = Exec.execute((String[]) cmd.toArray(new String[] {}), null, null, asAdminScript.getParentFile());
+
+      if (result.getExitCode() != 0) { throw new RuntimeException(result.toString()); }
+    }
+
   }
 
   protected static void checkFile(final File file) {
@@ -236,6 +262,8 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
     System.out.println("Started " + params.instanceName() + " on port " + httpPort);
 
     waitForAppInstanceRunning(params);
+
+    createUsers(params);
 
     deployWars(nodeLogFile, params.deployables());
 
@@ -421,9 +449,9 @@ public abstract class AbstractGlassfishAppServer extends AbstractAppServer {
         .grep("^SEVERE: WEB0610: WebModule \\[/web1\\] failed to deploy and has been disabled$", nodeLogFile);
     if (!hits.isEmpty()) { throw new RetryException(result.toString()); }
 
-    if (result.getStderr().contains("Remote server does not listen for requests on")) {
-      throw new RetryException(result.toString());
-    }
+    if (result.getStderr().contains("Remote server does not listen for requests on")) { throw new RetryException(
+                                                                                                                 result
+                                                                                                                     .toString()); }
 
     // Generic deploy failure
     throw new RuntimeException("Deploy failed for " + warName + ": " + result);

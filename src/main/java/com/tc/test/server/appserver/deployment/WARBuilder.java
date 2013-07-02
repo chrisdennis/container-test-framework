@@ -49,9 +49,7 @@ public class WARBuilder implements DeploymentBuilder {
 
   private FileSystemPath               warDirectoryPath;
   private final String                 warFileName;
-  private final Set                    classDirectories      = new HashSet();                        /*
-                                                                                                       * <FileSystemPath>
-                                                                                                       */
+  private final Set                    classDirectories      = new HashSet();
   private final Set                    libs                  = new HashSet();
   private final List                   resources             = new ArrayList();
   private final Map                    contextParams         = new HashMap();
@@ -69,7 +67,7 @@ public class WARBuilder implements DeploymentBuilder {
   private final FileSystemPath         tmpResourcePath;
   private final boolean                clustered;
   private boolean                      neededWebXml          = true;
-  private String                       webXmlFragment;
+  private final List<String>           webXmlFragments       = new ArrayList<String>();
   private String                       webAppVersion         = "2.5";
 
   public WARBuilder(File tempDir, TestConfigObject config) throws IOException {
@@ -288,8 +286,8 @@ public class WARBuilder implements DeploymentBuilder {
         pw.println("  </jsp-config>");
       }
 
-      if (webXmlFragment != null) {
-        pw.println(webXmlFragment);
+      for (String fragment : webXmlFragments) {
+        pw.println(fragment);
       }
 
       pw.println("</web-app>");
@@ -573,7 +571,7 @@ public class WARBuilder implements DeploymentBuilder {
 
   @Override
   public void addWebXmlFragment(String fragment) {
-    webXmlFragment = fragment;
+    webXmlFragments.add(fragment);
   }
 
   @SuppressWarnings("resource")
