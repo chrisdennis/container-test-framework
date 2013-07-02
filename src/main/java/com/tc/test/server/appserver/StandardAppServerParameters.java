@@ -31,8 +31,9 @@ public class StandardAppServerParameters implements AppServerParameters {
   private final Collection<ValveDefinition> valves           = new ArrayList();
   private final String                      instanceName;
   private final Properties                  props;
+  private final List<String>                extraClassPath = new ArrayList<String>();
+  private final List<User>                  users          = new ArrayList<User>();
   private String                            jvmArgs          = "";
-  private final List<String>                extraClassPath   = new ArrayList<String>();
 
   public StandardAppServerParameters(String instanceName, Properties props) {
     this.instanceName = instanceName;
@@ -145,4 +146,14 @@ public class StandardAppServerParameters implements AppServerParameters {
   public Collection<ValveDefinition> valves() {
     return valves;
   }
+
+  @Override
+  public List<User> getUsers() {
+    return users;
+  }
+
+  public void addUser(User user) {
+    users.add(user);
+  }
+
 }

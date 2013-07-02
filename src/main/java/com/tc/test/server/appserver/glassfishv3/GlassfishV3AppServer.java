@@ -12,6 +12,7 @@ import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.AppServerResult;
+import com.tc.test.server.appserver.User;
 import com.tc.test.server.appserver.glassfish.AbstractGlassfishAppServer;
 import com.tc.test.server.appserver.glassfish.GlassfishAppServerInstallation;
 import com.tc.test.server.util.AppServerUtil;
@@ -42,19 +43,20 @@ public class GlassfishV3AppServer extends AbstractGlassfishAppServer {
   }
 
   @Override
-  protected synchronized File getPasswdFile() throws IOException {
-    if (passwdFile == null) {
-      passwdFile = new File(instanceDir.getParentFile(), "passwd" + System.currentTimeMillis() + ".txt");
+  protected File getPasswdFile(User user) throws IOException {
+    File passwdFile = new File(instanceDir.getParentFile(), "passwd" + System.currentTimeMillis() + ".txt");
 
-      PrintWriter out = null;
-      try {
-        out = new PrintWriter(new FileOutputStream(passwdFile));
-        out.println("AS_ADMIN_ADMINPASSWORD=admin");
-        out.println("AS_ADMIN_MASTERPASSWORD=changeit");
-      } finally {
-        if (out != null) {
-          out.close();
-        }
+    PrintWriter out = null;
+    try {
+      out = new PrintWriter(new FileOutputStream(passwdFile));
+      out.println("AS_ADMIN_ADMINPASSWORD=admin");
+      out.println("AS_ADMIN_MASTERPASSWORD=changeit");
+      if (user != null) {
+        out.println("AS_ADMIN_USERPASSWORD=" + user.getPassword());
+      }
+    } finally {
+      if (out != null) {
+        out.close();
       }
     }
 
@@ -119,6 +121,8 @@ public class GlassfishV3AppServer extends AbstractGlassfishAppServer {
     System.out.println("Started " + params.instanceName() + " on port " + httpPort);
 
     waitForAppInstanceRunning(params);
+
+    createUsers(params);
 
     deployWars(nodeLogFile, params.deployables());
 

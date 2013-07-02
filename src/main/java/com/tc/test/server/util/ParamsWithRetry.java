@@ -4,6 +4,7 @@
 package com.tc.test.server.util;
 
 import com.tc.test.server.appserver.AppServerParameters;
+import com.tc.test.server.appserver.User;
 import com.tc.test.server.appserver.ValveDefinition;
 
 import java.util.Collection;
@@ -59,5 +60,10 @@ public class ParamsWithRetry implements AppServerParameters {
   @Override
   public Map deployments() {
     return delegate.deployments();
+  }
+
+  @Override
+  public List<User> getUsers() {
+    return delegate.getUsers();
   }
 }
