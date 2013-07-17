@@ -3,31 +3,28 @@
  */
 package com.tc.test.server.appserver.load;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-
 import com.tc.test.server.util.HttpUtil;
+
+import java.util.concurrent.BlockingQueue;
 
 public class RequestQueueHandler extends Thread {
 
-  private final LinkedQueue      queue;
+  private final BlockingQueue<Request> queue;
 
-  public RequestQueueHandler(LinkedQueue queue) {
+  public RequestQueueHandler(BlockingQueue<Request> queue) {
     this.queue = queue;
   }
 
   public void run() {
     while (true) {
       try {
-        Object obj = this.queue.take();
-        if (obj instanceof ExitRequest) {
+        Request request = this.queue.take();
+        if (request instanceof ExitRequest) {
           return;
-        } else if (obj instanceof Request) {
-          Request request = (Request) obj;
+        } else {
           request.setExitQueueTime();
           HttpUtil.getInt(request.getUrl(), request.getClient());
           request.setProcessCompletionTime();
-        } else {
-          throw new AssertionError("EventQueue was populated with a non-Request object.");
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
