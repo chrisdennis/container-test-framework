@@ -189,6 +189,22 @@ public class ServerManager {
       dsoServer.getJvmArgs().add(iterator.next());
     }
 
+    // look up tsa-war
+    String classpath = TestConfigObject.getInstance().getProperty("tc.tests.info.l2.classpath");
+    String[] classpathElements = classpath.split(File.pathSeparator);
+    String tsaWar = null;
+    for (String e : classpathElements) {
+      if (e.endsWith(".war") && e.contains("management-tsa-war")) {
+        tsaWar = e;
+        break;
+      }
+    }
+
+    if (tsaWar != null) {
+      System.out.println("Setting com.tc.managem.war to " + tsaWar);
+      dsoServer.getJvmArgs().add("-Dcom.tc.management.war=" + tsaWar);
+    }
+
     System.out.println("Starting DSO server with sandbox: " + sandbox.getAbsolutePath());
     dsoServer.start();
     addServerToStop(dsoServer);
