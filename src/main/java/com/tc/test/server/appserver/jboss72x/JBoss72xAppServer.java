@@ -4,7 +4,6 @@
  */
 package com.tc.test.server.appserver.jboss72x;
 
-import org.apache.commons.io.FileUtils;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss72xInstalledLocalContainer;
@@ -14,12 +13,14 @@ import org.codehaus.cargo.container.spi.jvm.JvmLauncher;
 
 import com.tc.test.AppServerInfo;
 import com.tc.test.server.ServerParameters;
+import com.tc.test.server.ServerResult;
 import com.tc.test.server.appserver.AppServerParameters;
 import com.tc.test.server.appserver.cargo.CargoAppServer;
+import com.tc.test.server.appserver.jboss_common.JBossHelper;
 import com.tc.test.server.util.AppServerUtil;
 
-import java.io.File;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * JBoss7x AppServer implementation
@@ -62,14 +63,22 @@ public final class JBoss72xAppServer extends CargoAppServer {
   }
 
   @Override
+  public ServerResult start(ServerParameters rawParams) throws Exception {
+    ServerResult result = super.start(rawParams);
+    JBossHelper.waitUntilWarsDeployed(this.instanceDir(), TimeUnit.MINUTES.toMillis(5));
+    return result;
+  }
+
+  @Override
   public void stop(ServerParameters rawParams) {
     try {
       super.stop(rawParams);
     } finally {
-      FileUtils.deleteQuietly(new File(this.instanceDir(), "data"));
-      FileUtils.deleteQuietly(new File(this.instanceDir(), "deployments"));
+      // FileUtils.deleteQuietly(new File(this.instanceDir(), "data"));
+      // FileUtils.deleteQuietly(new File(this.instanceDir(), "deployments"));
     }
   }
+
 
   private static class TCJBoss72xInstalledLocalContainer extends JBoss72xInstalledLocalContainer {
     private final Collection          sars;
