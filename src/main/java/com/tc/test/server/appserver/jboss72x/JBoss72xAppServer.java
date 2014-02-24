@@ -4,6 +4,7 @@
  */
 package com.tc.test.server.appserver.jboss72x;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.jboss.JBoss72xInstalledLocalContainer;
@@ -19,6 +20,7 @@ import com.tc.test.server.appserver.cargo.CargoAppServer;
 import com.tc.test.server.appserver.jboss_common.JBossHelper;
 import com.tc.test.server.util.AppServerUtil;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -74,8 +76,8 @@ public final class JBoss72xAppServer extends CargoAppServer {
     try {
       super.stop(rawParams);
     } finally {
-      // FileUtils.deleteQuietly(new File(this.instanceDir(), "data"));
-      // FileUtils.deleteQuietly(new File(this.instanceDir(), "deployments"));
+      FileUtils.deleteQuietly(new File(this.instanceDir(), "data"));
+      FileUtils.deleteQuietly(new File(this.instanceDir(), "deployments"));
     }
   }
 
