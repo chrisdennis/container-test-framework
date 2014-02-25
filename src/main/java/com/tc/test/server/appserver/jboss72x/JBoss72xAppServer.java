@@ -33,6 +33,7 @@ public final class JBoss72xAppServer extends CargoAppServer {
     super(installation);
   }
 
+  // NOTE: JBoss EAP 6.1.0 packages JBoss AS 7.2.0
   @Override
   protected String cargoServerKey() {
     return "jboss72x";
