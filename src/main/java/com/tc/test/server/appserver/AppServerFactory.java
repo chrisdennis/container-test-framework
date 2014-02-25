@@ -82,6 +82,7 @@ public abstract class AppServerFactory {
           if ("5".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss51xAppServerFactory(); }
           if ("6".equals(majorVersion)) { return new JBoss6xAppServerFactory(); }
           if ("7".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss7xAppServerFactory(); }
+          if ("7".equals(majorVersion) && minorVersion.startsWith("2")) { return new JBoss72xAppServerFactory(); }
         }
         break;
       case AppServerInfo.GLASSFISH:
