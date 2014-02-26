@@ -15,6 +15,7 @@ import com.tc.test.server.appserver.jboss42x.JBoss42xAppServerFactory;
 import com.tc.test.server.appserver.jboss4x.JBoss4xAppServerFactory;
 import com.tc.test.server.appserver.jboss51x.JBoss51xAppServerFactory;
 import com.tc.test.server.appserver.jboss6x.JBoss6xAppServerFactory;
+import com.tc.test.server.appserver.jboss72x.JBoss72xAppServerFactory;
 import com.tc.test.server.appserver.jboss7x.JBoss7xAppServerFactory;
 import com.tc.test.server.appserver.jetty6x.Jetty6xAppServerFactory;
 import com.tc.test.server.appserver.jetty7x.Jetty7xAppServerFactory;
@@ -76,12 +77,12 @@ public abstract class AppServerFactory {
           } else if (minorVersion.startsWith("2")) { return new JBoss42xAppServerFactory(); }
         }
         if (factoryName.contains("eap")) {
-          if ("6".equals(majorVersion)) { return new JBoss7xAppServerFactory(); }
+          if ("6".equals(majorVersion)) { return new JBoss72xAppServerFactory(); }
         } else {
           if ("5".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss51xAppServerFactory(); }
           if ("6".equals(majorVersion)) { return new JBoss6xAppServerFactory(); }
           if ("7".equals(majorVersion) && minorVersion.startsWith("1")) { return new JBoss7xAppServerFactory(); }
-          if ("7".equals(majorVersion) && minorVersion.startsWith("2")) { return new JBoss7xAppServerFactory(); }
+          if ("7".equals(majorVersion) && minorVersion.startsWith("2")) { return new JBoss72xAppServerFactory(); }
         }
         break;
       case AppServerInfo.GLASSFISH:
