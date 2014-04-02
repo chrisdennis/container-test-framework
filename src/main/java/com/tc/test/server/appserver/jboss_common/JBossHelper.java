@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -92,7 +93,16 @@ public class JBossHelper {
 
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
-      transformer.transform(new DOMSource(doc), new StreamResult(serverXml));
+
+      FileOutputStream outputStream = null;
+      try {
+        outputStream = new FileOutputStream(serverXml);
+        // Cannot rely on StreamResult(File) constructor as Jenkins can have strange char in file path
+        transformer.transform(new DOMSource(doc), new StreamResult(outputStream));
+      } finally {
+        IOUtils.closeQuietly(outputStream);
+      }
+
     }
   }
 

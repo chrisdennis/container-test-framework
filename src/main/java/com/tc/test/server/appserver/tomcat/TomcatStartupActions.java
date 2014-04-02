@@ -88,7 +88,16 @@ public class TomcatStartupActions {
 
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
-      transformer.transform(new DOMSource(doc), new StreamResult(serverXml));
+
+      FileOutputStream outputStream = null;
+      try {
+        outputStream = new FileOutputStream(serverXml);
+        // Cannot rely on StreamResult(File) constructor as Jenkins can have strange char in file path
+        transformer.transform(new DOMSource(doc), new StreamResult(outputStream));
+      } finally {
+        IOUtils.closeQuietly(outputStream);
+      }
+
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
     }
