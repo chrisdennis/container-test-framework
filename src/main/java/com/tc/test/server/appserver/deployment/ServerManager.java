@@ -103,6 +103,8 @@ public class ServerManager {
       serverTcConfig.setGroupPort(groupPort);
       serverTcConfig.setTsaPort(tsaPort);
 
+      serverTcConfig.getServers()[0].setJmxEnabled(true);
+
       if (useTsaProxy) {
         l2ProxyManager = new ProxyConnectManagerImpl(tsaPort, proxyTsaPort);
         l2ProxyManager.setupProxy();
