@@ -91,6 +91,7 @@ public class ServerManager {
       serverTcConfig.setTsaPort(9510);
       serverTcConfig.setJmxPort(9520);
       serverTcConfig.setGroupPort(9530);
+      serverTcConfig.setManagementPort(9540);
     } else {
 
       PortChooser pc = new PortChooser();
@@ -98,10 +99,12 @@ public class ServerManager {
       int proxyTsaPort = pc.chooseRandomPort();
       int jmxPort = pc.chooseRandomPort();
       int groupPort = pc.chooseRandomPort();
+      int managementPort = pc.chooseRandomPort();
 
       serverTcConfig.setJmxPort(jmxPort);
       serverTcConfig.setGroupPort(groupPort);
       serverTcConfig.setTsaPort(tsaPort);
+      serverTcConfig.setManagementPort(managementPort);
 
       serverTcConfig.getServers()[0].setJmxEnabled(true);
 
