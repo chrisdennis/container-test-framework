@@ -11,14 +11,10 @@
   <groupId>org.terracotta.test</groupId>
   <artifactId>container-test-framework</artifactId>
   <name>Container Test Framework</name>
-  <version>2.0.0</version>
+  <version>2.0.1-SNAPSHOT</version>
 
   <properties>
     <terracotta.core.version>4.2.0</terracotta.core.version>
-  
-    <metadata.build.jenkins.url>http://jenkins.terracotta.eur.ad.sag:8080/job/container-test-framework_trunk_releaser/2/</metadata.build.jenkins.url>
-    <metadata.build.maven.active.profiles>terracotta-repositories,release,tc-publish</metadata.build.maven.active.profiles>
-    <metadata.svn.revision>45443</metadata.svn.revision>
   </properties>
 
   <dependencies>
