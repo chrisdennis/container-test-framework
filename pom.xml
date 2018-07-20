@@ -4,7 +4,7 @@
   <parent>
     <artifactId>forge-parent</artifactId>
     <groupId>org.terracotta.forge</groupId>
-    <version>3.27</version>
+    <version>4.1</version>
     <relativePath/>
   </parent>
 
@@ -15,6 +15,8 @@
 
   <properties>
     <terracotta.core.version>4.3.0.0.26</terracotta.core.version>
+    <!-- using 1.8 for everything aside for compilation via 4.x forge-parent -->
+    <java.build.version>1.6</java.build.version>
   </properties>
 
   <dependencies>
