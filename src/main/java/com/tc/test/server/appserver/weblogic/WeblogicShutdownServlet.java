@@ -3,6 +3,8 @@
  */
 package com.tc.test.server.appserver.weblogic;
 
+import java.lang.reflect.Method;
+
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +43,30 @@ public class WeblogicShutdownServlet extends HttpServlet implements Runnable {
     }
   }
 
+  private static Method findMethod(String type, String method, Object... args) {
+    try {
+      Class clazz = Class.forName(type);
+      for (Method m : clazz.getMethods()) {
+        if (!m.getName().equals(method) || !(m.getParameterTypes().length == args.length)) {
+          continue;
+        }
+
+        boolean found = false;
+        Class[] paramTypes = m.getParameterTypes();
+        for (int i = 0; i < args.length; i++) {
+          found = paramTypes[i].isAssignableFrom(args[i].getClass());
+        }
+
+        if (found) {
+          return m;
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return null;
+  }
+
   private static Object invokeStatic(String type, String method, Object... args) {
     Class[] argTypes = new Class[args.length];
     for (int i = 0; i < args.length; i++) {
@@ -49,6 +75,16 @@ public class WeblogicShutdownServlet extends HttpServlet implements Runnable {
 
     try {
       return Class.forName(type).getMethod(method, argTypes).invoke(null, args);
+    } catch (NoSuchMethodException nsme) {
+      Method m = findMethod(type, method, args);
+      if (m == null) {
+        throw new RuntimeException(nsme);
+      }
+      try {
+        return m.invoke(null, args);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
