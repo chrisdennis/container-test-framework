@@ -172,11 +172,8 @@ public class ServerManager {
     File workDir = new File(tempDir, "dso-server-" + serverCounter++);
     workDir.mkdirs();
     dsoServer = new DSOServer(withPersistentStore, workDir, serverTcConfig);
-    if (!Vm.isIBM() && !(Os.isMac() && Vm.isJDK14())) {
-      dsoServer.getJvmArgs().add("-XX:+HeapDumpOnOutOfMemoryError");
-    }
-
     if (!Vm.isIBM()) {
+      dsoServer.getJvmArgs().add("-XX:+HeapDumpOnOutOfMemoryError");
       dsoServer.getJvmArgs().add("-verbose:gc");
 
       if (!Vm.isJRockit()) {

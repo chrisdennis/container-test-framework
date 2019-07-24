@@ -60,7 +60,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     this.workingDir = new File(installation.sandboxDirectory(), serverInstanceName);
     this.tcConfigFile = tcConfigFile;
 
-    if (!Vm.isIBM() && !(Os.isMac() && Vm.isJDK14())) {
+    if (!Vm.isIBM()) {
       parameters.appendJvmArgs("-XX:+HeapDumpOnOutOfMemoryError");
     }
 
