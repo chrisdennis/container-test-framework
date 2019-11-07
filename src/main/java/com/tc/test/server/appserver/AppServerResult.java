@@ -4,10 +4,11 @@
 package com.tc.test.server.appserver;
 
 import com.tc.test.server.Server;
+import com.tc.test.server.ServerParameters;
 import com.tc.test.server.ServerResult;
 
 /**
- * Data Object returned by {@link AbstractAppServer.start()}.
+ * Data Object returned by {@link AbstractAppServer#start(ServerParameters)}.
  */
 public final class AppServerResult implements ServerResult {
 

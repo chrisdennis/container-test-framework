@@ -16,7 +16,7 @@ import java.util.Properties;
 
 /**
  * This class creates specific implementations of return values for the given methods. To obtain an instance you must
- * call {@link NewAppServerFactory.createFactoryFromProperties()}.
+ * call {@link AppServerFactory#createFactoryFromProperties()}.
  */
 public final class Jetty9xAppServerFactory extends AppServerFactory {
 

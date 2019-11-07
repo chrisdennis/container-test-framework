@@ -100,9 +100,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
         break;
     }
 
-    if (!Vm.isJRockit()) {
-      parameters.appendJvmArgs("-XX:MaxPermSize=256m");
-    }
+    parameters.appendJvmArgs("-XX:MaxPermSize=256m");
     parameters.appendJvmArgs("-Xms128m -Xmx512m");
 
     if (Os.getOsName().startsWith("HP-UX")) {
@@ -140,23 +138,17 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
     if (GC_LOGGING && !Vm.isIBM() && appId != AppServerInfo.WEBSPHERE) {
       parameters.appendJvmArgs("-verbose:gc");
 
-      if (!Vm.isJRockit()) {
+      String gcLogPath = new File(this.installation.sandboxDirectory(), serverInstanceName + "-gc.log")
+          .getAbsolutePath();
+      boolean isPreJava9 = System.getProperty("java.specification.version").contains(".");
+
+      if (isPreJava9) {
         parameters.appendJvmArgs("-XX:+PrintGCDetails");
         parameters.appendJvmArgs("-XX:+PrintGCTimeStamps");
-      }
-
-      final String gcLogSwitch;
-      if (Vm.isJRockit()) {
-        gcLogSwitch = "verboselog";
+        parameters.appendJvmArgs("-Xloggc:" + gcLogPath);
       } else {
-        gcLogSwitch = "loggc";
+        parameters.appendJvmArgs("-Xlog:gc*:file=" + gcLogPath);
       }
-
-      parameters.appendJvmArgs("-X"
-                               + gcLogSwitch
-                               + ":"
-                               + new File(this.installation.sandboxDirectory(), serverInstanceName + "-gc.log")
-                                   .getAbsolutePath());
     }
 
     if (ENABLE_DEBUGGER) {
@@ -225,7 +217,7 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
   }
 
   /**
-   * url: /<CONTEXT>/<MAPPING>?params=etc
+   * {@code url: /<CONTEXT>/<MAPPING>?params=etc}
    */
   @Override
   public WebResponse ping(final String url, final WebClient wc) throws IOException {

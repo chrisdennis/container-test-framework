@@ -88,7 +88,6 @@ public class Assert {
    * Evaluate the boolean exception and throw an assertion error if true
    * 
    * @param expr Expression
-   * @param message Message for assertion error if true
    */
   public static void assertFalse(boolean expr) {
     eval(!expr);

@@ -5,13 +5,14 @@
 package com.tc.test.server.appserver.glassfishv1;
 
 import com.tc.test.server.appserver.AppServer;
+import com.tc.test.server.appserver.AppServerFactory;
 import com.tc.test.server.appserver.AppServerInstallation;
 import com.tc.test.server.appserver.glassfish.AbstractGlassfishAppServerFactory;
 import com.tc.test.server.appserver.glassfish.GlassfishAppServerInstallation;
 
 /**
  * This class creates specific implementations of return values for the given methods. To obtain an instance you must
- * call {@link NewAppServerFactory.createFactoryFromProperties()}.
+ * call {@link AppServerFactory#createFactoryFromProperties()}.
  */
 public final class GlassfishV1AppServerFactory extends AbstractGlassfishAppServerFactory {
 

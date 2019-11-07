@@ -176,19 +176,16 @@ public class ServerManager {
       dsoServer.getJvmArgs().add("-XX:+HeapDumpOnOutOfMemoryError");
       dsoServer.getJvmArgs().add("-verbose:gc");
 
-      if (!Vm.isJRockit()) {
+      String gcLogPath = new File(workDir, "dso-server-gc.log").getAbsolutePath();
+      boolean isPreJava9 = System.getProperty("java.specification.version").contains(".");
+
+      if (isPreJava9) {
         dsoServer.getJvmArgs().add("-XX:+PrintGCDetails");
         dsoServer.getJvmArgs().add("-XX:+PrintGCTimeStamps");
-      }
-
-      final String gcLogSwitch;
-      if (Vm.isJRockit()) {
-        gcLogSwitch = "verboselog";
+        dsoServer.getJvmArgs().add("-Xloggc:" + gcLogPath);
       } else {
-        gcLogSwitch = "loggc";
+        dsoServer.getJvmArgs().add("-Xlog:gc*:file=" + gcLogPath);
       }
-
-      dsoServer.getJvmArgs().add("-X" + gcLogSwitch + ":" + new File(workDir, "dso-server-gc.log").getAbsolutePath());
     }
 
     dsoServer.getJvmArgs().add("-Xmx384m");
