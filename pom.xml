@@ -15,6 +15,7 @@
 
   <properties>
     <terracotta.core.version>4.3.9.0.6</terracotta.core.version>
+    <skipSagFinder>true</skipSagFinder>
   </properties>
 
   <dependencies>
