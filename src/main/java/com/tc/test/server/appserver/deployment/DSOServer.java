@@ -8,6 +8,7 @@ import com.tc.config.test.schema.L2ConfigBuilder;
 import com.tc.config.test.schema.TerracottaConfigBuilder;
 import com.tc.objectserver.control.ExtraProcessServerControl;
 import com.tc.util.TcConfigBuilder;
+import com.tc.util.concurrent.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,9 +69,17 @@ public class DSOServer extends AbstractStoppable {
 
   @Override
   protected void doStop() throws Exception {
-    logger.debug("Stopping...");
-    serverProc.shutdown();
-    logger.debug("...stopped");
+    logger.info("Stopping...");
+    for (int i = 0; i < 3; i++) {
+      try {
+        serverProc.shutdown();
+        break;
+      } catch (Exception e) {
+        e.printStackTrace();
+        ThreadUtil.reallySleep(1000);
+      }
+    }
+    logger.info("...stopped");
   }
 
   private File writeConfig() throws IOException {

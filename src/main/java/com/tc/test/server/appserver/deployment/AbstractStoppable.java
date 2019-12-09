@@ -4,6 +4,7 @@
  */
 package com.tc.test.server.appserver.deployment;
 
+import com.tc.util.concurrent.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -27,7 +28,15 @@ public abstract class AbstractStoppable implements Stoppable {
     logger.info("### Stopping " + this);
     long l1 = System.currentTimeMillis();
     stopped = true;
-    doStop();
+    for (int i = 0; i < 3; i++) {
+      try {
+        doStop();
+        break;
+      } catch (Exception e) {
+        e.printStackTrace();
+        ThreadUtil.reallySleep(1000);
+      }
+    }
     long l2 = System.currentTimeMillis();
     logger.info("### Stopped " + this + "; " + (l2 - l1) / 1000f);
   }
