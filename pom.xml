@@ -14,7 +14,7 @@
   <version>3.0.3-SNAPSHOT</version>
 
   <properties>
-    <terracotta.core.version>4.3.9.0.6</terracotta.core.version>
+    <terracotta.core.version>4.3.9.0.10</terracotta.core.version>
   </properties>
 
   <dependencies>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.35.0</version>
+      <version>2.36.0</version>
       <exclusions>
         <exclusion>
           <artifactId>xml-apis</artifactId>
