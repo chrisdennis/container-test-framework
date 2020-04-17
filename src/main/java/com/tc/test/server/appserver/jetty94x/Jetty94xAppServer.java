@@ -92,6 +92,7 @@ public class Jetty94xAppServer extends AbstractAppServer {
     cmd.add("--module=deploy");
     cmd.add("--module=jsp");
     cmd.add("--module=client");
+    cmd.add("--module=sessions");
     cmd.add("--module=stats");
     cmd.add("STOP.PORT=" + stop_port);
     cmd.add("STOP.KEY=" + STOP_KEY);
@@ -177,11 +178,11 @@ public class Jetty94xAppServer extends AbstractAppServer {
   }
 
   private File getWarsDirectory() {
-    return new File(instanceDir, "war");
+    return new File(instanceDir, "webapps");
   }
 
   private File getContextsDirectory() {
-    return new File(instanceDir, "contexts");
+    return getWarsDirectory();
   }
 
   private static String contextFile(final String warFile, final String contextPath) {
