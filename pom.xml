@@ -14,7 +14,7 @@
   <version>3.0.4-SNAPSHOT</version>
 
   <properties>
-    <terracotta.core.version>4.3.9.0.10</terracotta.core.version>
+    <terracotta.core.version>4.3.9.0.252</terracotta.core.version>
   </properties>
 
   <dependencies>
