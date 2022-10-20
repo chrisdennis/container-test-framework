@@ -69,7 +69,7 @@ public abstract class AbstractAppServer implements AppServer {
   /**
    * Implementing classes call this method to assign a series of properties to be available as system properties to the
    * appserver's JVM. Properties are optionally set by calling {@link StandardAppServerParameters}, passing a
-   * <tt>Properties</tt> object to it's overloaded constructor. These instance specific properties are written to disk
+   * <code>Properties</code> object to it's overloaded constructor. These instance specific properties are written to disk
    * and read by the appserver JVM. Two properties are always set by default: {@link AppServerConstants#APP_INSTANCE}
    * and {@link AppServerConstants#APP_PORT}.
    */
