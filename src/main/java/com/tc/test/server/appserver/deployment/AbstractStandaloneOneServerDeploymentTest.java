@@ -12,6 +12,9 @@ import com.tc.test.server.appserver.StandardAppServerParameters;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import static java.lang.Integer.parseInt;
+import static java.lang.System.getProperty;
+
 public abstract class AbstractStandaloneOneServerDeploymentTest extends AbstractDeploymentTestCase {
   public WebApplicationServer server0;
 
@@ -99,7 +102,13 @@ public abstract class AbstractStandaloneOneServerDeploymentTest extends Abstract
     protected abstract void configureWar(DeploymentBuilder builder);
 
     protected void configureServerParamers(StandardAppServerParameters params) {
-      // override this method to modify jvm args for app server
+      if (parseInt(getProperty("java.specification.version").split("\\.")[0]) >= 16) {
+        params.appendJvmArgs("--add-opens java.base/java.lang=ALL-UNNAMED" +
+          " --add-opens java.base/java.io=ALL-UNNAMED" +
+          " --add-opens java.base/java.util=ALL-UNNAMED" +
+          " --add-opens java.base/java.security=ALL-UNNAMED" +
+          " --add-opens java.base/java.net=ALL-UNNAMED");
+      }
     }
   }
 

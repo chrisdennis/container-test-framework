@@ -100,7 +100,6 @@ public class GenericServer extends AbstractStoppable implements WebApplicationSe
         break;
     }
 
-    parameters.appendJvmArgs("-XX:MaxPermSize=256m");
     parameters.appendJvmArgs("-Xms128m -Xmx512m");
 
     if (Os.getOsName().startsWith("HP-UX")) {
