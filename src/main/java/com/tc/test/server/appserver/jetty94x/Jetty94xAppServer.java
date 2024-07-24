@@ -1,3 +1,7 @@
+/*
+ * Copyright Terracotta, Inc.
+ * Copyright Super iPaaS Integration LLC, an IBM Company 2024
+ */
 package com.tc.test.server.appserver.jetty94x;
 
 import org.apache.commons.io.IOUtils;
