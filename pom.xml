@@ -73,26 +73,12 @@
   <repositories>
     <repository>
       <id>terracotta-repository</id>
-      <url>http://www.terracotta.org/download/reflector/releases</url>
+      <url>https://www.terracotta.org/download/reflector/releases</url>
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>terracotta-ee-releases</id>
-      <name>Terracotta EE Releases Repository</name>
-      <url>${terracotta-ee-releases-url}</url>
-    </repository>
-    <snapshotRepository>
-      <id>terracotta-ee-snapshots</id>
-       <uniqueVersion>false</uniqueVersion>
-       <name>Terracotta EE Snapshots Repository</name>
-       <url>${terracotta-ee-snapshots-url}</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <scm>
-    <connection>scm:git:git@github.softwareag.com:Terracotta-OSS/container-test-framework.git</connection>
-    <developerConnection>scm:git:https://github.softwareag.com/Terracotta-OSS/container-test-framework.git</developerConnection>
+    <connection>scm:git:git@github.com:Terracotta-OSS/container-test-framework.git</connection>
+    <developerConnection>scm:git:https://github.com/Terracotta-OSS/container-test-framework.git</developerConnection>
   </scm>
 </project>
