@@ -4,7 +4,7 @@
   <parent>
     <artifactId>forge-parent</artifactId>
     <groupId>org.terracotta.forge</groupId>
-    <version>7.0</version>
+    <version>8.0</version>
     <relativePath/>
   </parent>
 
@@ -73,7 +73,7 @@
   <repositories>
     <repository>
       <id>terracotta-repository</id>
-      <url>https://www.terracotta.org/download/reflector/releases</url>
+      <url>https://repo.terracotta.org/maven2</url>
     </repository>
   </repositories>
 
