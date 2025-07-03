@@ -34,6 +34,7 @@ import com.tc.test.server.appserver.jetty7x.Jetty7xAppServerFactory;
 import com.tc.test.server.appserver.jetty8x.Jetty8xAppServerFactory;
 import com.tc.test.server.appserver.jetty94x.*;
 import com.tc.test.server.appserver.jetty9x.Jetty9xAppServerFactory;
+import com.tc.test.server.appserver.jetty12x.Jetty12xAppServerFactory;
 import com.tc.test.server.appserver.resin31x.Resin31xAppServerFactory;
 import com.tc.test.server.appserver.resin40x.Resin40xAppServerFactory;
 import com.tc.test.server.appserver.tomcat5x.Tomcat5xAppServerFactory;
@@ -114,6 +115,7 @@ public abstract class AppServerFactory {
             return new Jetty94xAppServerFactory();
           }
         }
+        if ("12".equals(majorVersion)) return new Jetty12xAppServerFactory();
         break;
       case AppServerInfo.RESIN:
         if ("3".equals(majorVersion)) return new Resin31xAppServerFactory();
