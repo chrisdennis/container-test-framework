@@ -57,7 +57,11 @@ import junit.framework.Assert;
 
 public class WARBuilder implements DeploymentBuilder {
   private static final TCLogger        logger                = TCLogging.getLogger(WARBuilder.class);
-  private static final String          WEBAPP_VERSION_STRING = "version=\"%s\" xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_%s.xsd\"";
+  private static final String          WEBAPP_VERSION_STRING = "xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" " +
+      "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+      "xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd\" " +
+      "metadata-complete=\"false\" " +
+      "version=\"%s\"";
 
   private FileSystemPath               warDirectoryPath;
   private final String                 warFileName;
@@ -80,7 +84,7 @@ public class WARBuilder implements DeploymentBuilder {
   private final boolean                clustered;
   private boolean                      neededWebXml          = true;
   private final List<String>           webXmlFragments       = new ArrayList<String>();
-  private String                       webAppVersion         = "2.5";
+  private String                       webAppVersion         = "6.0";
 
   public WARBuilder(File tempDir, TestConfigObject config) throws IOException {
     this(File.createTempFile("test", ".war", tempDir).getAbsolutePath(), tempDir, config, true);
