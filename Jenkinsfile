@@ -18,6 +18,5 @@
 //Jenkins integration.
 //See https://svn.terracotta.org/repo/internal/infrastructure/jenkins-pipeline-job-builder/trunk/shared/vars/
 mavenBuild.legacy4x(
-    maven_goal: '-V clean deploy findbugs:findbugs pmd:pmd -Ptc-publish -Djenkins.publisher=true',
-    jdk: 11
+    maven_goal: '-V clean deploy findbugs:findbugs pmd:pmd -Ptc-publish -Djenkins.publisher=true'
 )
